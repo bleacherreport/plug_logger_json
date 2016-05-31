@@ -1,2 +1,0 @@
-defmodule PlugLoggerJson do
-end

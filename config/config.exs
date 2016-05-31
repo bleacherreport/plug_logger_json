@@ -28,3 +28,14 @@ use Mix.Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env}.exs"
+#
+config :logger, :console,
+  format: "$message\n",
+  level: :info,
+  metadata: [:request_id]
+
+config :plug_logger_json,
+  filtered_keys: ["password", "authorization"],
+  app: "fake_app",
+  environment: "test",
+  server: "localhost"
