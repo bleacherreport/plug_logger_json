@@ -57,6 +57,7 @@ defmodule Plug.LoggerJSON do
     Keyword.get(opts, :log, :info)
   end
 
+  @spec call(Plug.Conn.t, atom) :: Plug.Conn.t
   def call(conn, level) do
     start = :os.timestamp()
 
@@ -66,6 +67,7 @@ defmodule Plug.LoggerJSON do
     end)
   end
 
+  @spec log(Plug.Conn.t, atom, {non_neg_integer, non_neg_integer, non_neg_integer}) :: atom
   def log(conn, level, start) do
     Logger.log level, fn ->
       stop        = :os.timestamp()
@@ -75,33 +77,37 @@ defmodule Plug.LoggerJSON do
       req_params  = format_map_list(conn.params)
 
       %{
-        state: connection_type(conn),
-        status:         Integer.to_string(conn.status),
-        request_id:     req_id,
-        path:           conn.request_path,
-        params:         req_params,
-        req_headers:    req_headers,
-        server:         Application.get_env(:plug_logger_json, :server, "N/A"),
-        remote_ip:      format_ip(conn.remote_ip),
-        method:         conn.method,
-        level:          level,
-        environment:    Application.get_env(:plug_logger_json, :environment, "N/A"),
-        duration:       format_duration(duration),
-        date_time:      iso8601(:calendar.now_to_datetime(:os.timestamp)),
-        client_version: Map.get(req_headers, "client_version", "N/A"),
-        app:            Application.get_env(:plug_logger_json, :app, "N/A"),
-        api_version:    Map.get(req_headers, "api_version", "N/A")
+        "status"         => Integer.to_string(conn.status),
+        "state"          => connection_type(conn),
+        "request_id"     => req_id,
+        "path"           => conn.request_path,
+        "params"         => req_params,
+        "req_headers"    => req_headers,
+        "server"         => Application.get_env(:plug_logger_json, :server, "N/A"),
+        "remote_ip"      => format_ip(conn.remote_ip),
+        "method"         => conn.method,
+        "level"          => level,
+        "environment"    => Application.get_env(:plug_logger_json, :environment, "N/A"),
+        "duration"       => format_duration(duration),
+        "date_time"      => iso8601(:calendar.now_to_datetime(:os.timestamp)),
+        "client_version" => Map.get(req_headers, "client_version", "N/A"),
+        "app"            => Application.get_env(:plug_logger_json, :app, "N/A"),
+        "api_version"    => Map.get(req_headers, "api_version", "N/A")
       }
       |> Map.merge(phoenix_attributes(conn))
       |> Poison.encode!
     end
   end
 
+  @spec connection_type(%{atom => atom}) :: String.t
   defp connection_type(%{state: :chunked}), do: "Chunked"
   defp connection_type(_), do: "Sent"
 
+  @spec diff_times({non_neg_integer, non_neg_integer, non_neg_integer},
+   {non_neg_integer, non_neg_integer ,non_neg_integer}) :: integer
   defp diff_times(start, stop), do: :timer.now_diff(stop, start)
 
+  @spec filter_values({String.t, String.t}) :: map
   defp filter_values({k,v}) do
     filtered_keys = Application.get_env(:plug_logger_json, :filtered_keys, [])
     if Enum.member?(filtered_keys, k) do
@@ -111,14 +117,17 @@ defmodule Plug.LoggerJSON do
     end
   end
 
+  @spec format_duration(integer) :: String.t
   defp format_duration(duration) do
     Float.to_string(duration / 1000, decimals: 3)
   end
 
+  @spec format_ip({integer, integer, integer, integer}) :: String.t
   defp format_ip({a, b, c, d}) do
     "#{a}.#{b}.#{c}.#{d}"
   end
 
+  @spec format_map_list([%{String.t => String.t}]) :: map
   defp format_map_list(list) do
     list
     |> Enum.map(&filter_values/1)
@@ -132,12 +141,13 @@ defmodule Plug.LoggerJSON do
 
   @spec phoenix_attributes(Plug.Conn.t) :: map
   defp phoenix_attributes(%{private: %{phoenix_format: format, phoenix_controller: controller, phoenix_action: action}}) do
-    %{format: format, controller: controller, action: action}
+    %{"format" => format, "controller" => controller, "action" => action}
   end
   defp phoenix_attributes(_) do
-    %{format: "N/A", controller: "N/A", action: "N/A"}
+    %{"format" => "N/A", "controller" => "N/A", "action" => "N/A"}
   end
 
+  @spec zero_pad(1..3_000, non_neg_integer) :: String.t
   defp zero_pad(val, count) do
     num = Integer.to_string(val)
     :binary.copy("0", count - byte_size(num)) <> num
