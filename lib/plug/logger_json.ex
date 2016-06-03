@@ -84,13 +84,13 @@ defmodule Plug.LoggerJSON do
         "params"         => req_params,
         "req_headers"    => req_headers,
         "server"         => Application.get_env(:plug_logger_json, :server, "N/A"),
-        "remote_ip"      => format_ip(conn.remote_ip),
         "method"         => conn.method,
         "level"          => level,
         "environment"    => Application.get_env(:plug_logger_json, :environment, "N/A"),
         "duration"       => format_duration(duration),
         "date_time"      => iso8601(:calendar.now_to_datetime(:os.timestamp)),
         "client_version" => Map.get(req_headers, "client_version", "N/A"),
+        "client_ip"      => format_ip(Map.get(req_headers, "x-forwarded-for", "N/A")),
         "app"            => Application.get_env(:plug_logger_json, :app, "N/A"),
         "api_version"    => Map.get(req_headers, "api_version", "N/A")
       }
@@ -122,9 +122,12 @@ defmodule Plug.LoggerJSON do
     Float.to_string(duration / 1000, decimals: 3)
   end
 
-  @spec format_ip({integer, integer, integer, integer}) :: String.t
-  defp format_ip({a, b, c, d}) do
-    "#{a}.#{b}.#{c}.#{d}"
+  @spec format_ip(String.t) :: String.t
+  defp format_ip("N/A") do
+    "N/A"
+  end
+  defp format_ip(x_forwarded_for) do
+    hd(String.split(x_forwarded_for, ", "))
   end
 
   @spec format_map_list([%{String.t => String.t}]) :: map

@@ -44,6 +44,7 @@ defmodule Plug.LoggerJSONTest do
     assert map["action"] == "N/A"
     assert map["api_version"] == "N/A"
     assert map["app"] == "fake_app"
+    assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
     assert map["controller"] == "N/A"
     assert map["date_time"]
@@ -54,7 +55,6 @@ defmodule Plug.LoggerJSONTest do
     assert map["method"] == "GET"
     assert map["params"] == %{}
     assert map["path"] == "/"
-    assert map["remote_ip"] == "127.0.0.1"
     assert map["req_headers"] == %{}
     assert map["request_id"] == nil
     assert map["server"] == "localhost"
@@ -74,6 +74,7 @@ defmodule Plug.LoggerJSONTest do
     assert map["action"] == "N/A"
     assert map["api_version"] == "N/A"
     assert map["app"] == "fake_app"
+    assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
     assert map["controller"] == "N/A"
     assert map["date_time"]
@@ -84,7 +85,6 @@ defmodule Plug.LoggerJSONTest do
     assert map["method"] == "GET"
     assert map["params"] == %{"fake_param" => 1}
     assert map["path"] == "/"
-    assert map["remote_ip"] == "127.0.0.1"
     assert map["req_headers"] == %{
      "authorization" => "[FILTERED]",
      "content-type" => "application/json"
@@ -108,6 +108,7 @@ defmodule Plug.LoggerJSONTest do
     assert map["action"] == "show"
     assert map["api_version"] == "N/A"
     assert map["app"] == "fake_app"
+    assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
     assert map["controller"] == "Elixir.Plug.LoggerJSONTest"
     assert map["date_time"]
@@ -118,8 +119,39 @@ defmodule Plug.LoggerJSONTest do
     assert map["method"] == "GET"
     assert map["params"] == %{}
     assert map["path"] == "/"
-    assert map["remote_ip"] == "127.0.0.1"
     assert map["req_headers"] == %{}
+    assert map["request_id"] == nil
+    assert map["server"] == "localhost"
+    assert map["state"] == "Sent"
+    assert map["status"] == "200"
+  end
+
+  test "correct output - X-forwarded-for header" do
+    {_conn, message} = conn(:get, "/")
+                        |> put_req_header("x-forwarded-for", "209.49.75.165")
+                        |> put_private(:phoenix_controller, Plug.LoggerJSONTest)
+                        |> put_private(:phoenix_action, :show)
+                        |> put_private(:phoenix_format, "json")
+                        |> call
+    message = String.replace(message, "\e[22m", "")
+    message = String.replace(message, "\n\e[0m", "")
+    map     = Poison.decode! message
+
+    assert map["action"] == "show"
+    assert map["api_version"] == "N/A"
+    assert map["app"] == "fake_app"
+    assert map["client_ip"] == "209.49.75.165"
+    assert map["client_version"] == "N/A"
+    assert map["controller"] == "Elixir.Plug.LoggerJSONTest"
+    assert map["date_time"]
+    assert map["duration"]
+    assert map["environment"] == "test"
+    assert map["format"] == "json"
+    assert map["level"] == "info"
+    assert map["method"] == "GET"
+    assert map["params"] == %{}
+    assert map["path"] == "/"
+    assert map["req_headers"] == %{"x-forwarded-for" => "209.49.75.165"}
     assert map["request_id"] == nil
     assert map["server"] == "localhost"
     assert map["state"] == "Sent"
