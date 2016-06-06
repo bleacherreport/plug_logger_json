@@ -113,7 +113,7 @@ defmodule Plug.LoggerJSON do
     if Enum.member?(filtered_keys, k) do
       %{k => "[FILTERED]"}
     else
-      %{k => v}
+      %{k => format_value(v)}
     end
   end
 
@@ -133,8 +133,17 @@ defmodule Plug.LoggerJSON do
   @spec format_map_list([%{String.t => String.t}]) :: map
   defp format_map_list(list) do
     list
+    |> Enum.take(20)
     |> Enum.map(&filter_values/1)
     |> Enum.reduce(%{}, &(Map.merge(&2, &1)))
+  end
+
+  defp format_value(value) when is_binary(value) do
+    String.slice(value, 0..100)
+  end
+
+  defp format_value(value) do
+    value
   end
 
   defp iso8601({{year, month, day}, {hour, minute, second}}) do

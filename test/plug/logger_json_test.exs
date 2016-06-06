@@ -63,7 +63,7 @@ defmodule Plug.LoggerJSONTest do
   end
 
   test "correct output - params and headers" do
-    {_conn, message} = conn(:get, "/", fake_param: 1)
+    {_conn, message} = conn(:get, "/", fake_param: "1")
                         |> put_req_header("authorization", "f3443890-6683-4a25-8094-f23cf10b72d0")
                         |> put_req_header("content-type", "application/json")
                         |> call
@@ -83,7 +83,7 @@ defmodule Plug.LoggerJSONTest do
     assert map["format"] == "N/A"
     assert map["level"] == "info"
     assert map["method"] == "GET"
-    assert map["params"] == %{"fake_param" => 1}
+    assert map["params"] == %{"fake_param" => "1"}
     assert map["path"] == "/"
     assert map["req_headers"] == %{
      "authorization" => "[FILTERED]",
@@ -120,6 +120,48 @@ defmodule Plug.LoggerJSONTest do
     assert map["params"] == %{}
     assert map["path"] == "/"
     assert map["req_headers"] == %{}
+    assert map["request_id"] == nil
+    assert map["server"] == "localhost"
+    assert map["state"] == "Sent"
+    assert map["status"] == "200"
+  end
+
+  test "correct output - Post request JSON" do
+    json = %{"reaction" => %{
+      "reaction" => "other",
+      "track_id" => "7550",
+      "type"     => "emoji",
+      "user_id"  => "a2e684ee-2e5f-4e4d-879a-bb253908eef3"
+    }}
+    |> Poison.encode!
+
+    {_conn, message} = conn(:post, "/", json)
+  |> put_req_header("content-type", "application/json")
+  |> call
+    message = String.replace(message, "\e[22m", "")
+    message = String.replace(message, "\n\e[0m", "")
+    map     = Poison.decode! message
+
+    assert map["action"] == "N/A"
+    assert map["api_version"] == "N/A"
+    assert map["app"] == "fake_app"
+    assert map["client_ip"] == "N/A"
+    assert map["client_version"] == "N/A"
+    assert map["controller"] == "N/A"
+    assert map["date_time"]
+    assert map["duration"]
+    assert map["environment"] == "test"
+    assert map["format"] == "N/A"
+    assert map["level"] == "info"
+    assert map["method"] == "POST"
+    assert map["params"] == %{"reaction" => %{
+      "reaction" => "other",
+      "track_id" => "7550",
+      "type"     => "emoji",
+      "user_id"  => "a2e684ee-2e5f-4e4d-879a-bb253908eef3"
+    }}
+    assert map["path"] == "/"
+    assert map["req_headers"] == %{"content-type" => "application/json"}
     assert map["request_id"] == nil
     assert map["server"] == "localhost"
     assert map["state"] == "Sent"
