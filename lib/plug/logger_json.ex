@@ -32,7 +32,7 @@ defmodule Plug.LoggerJSON do
     "level":"info",
     "format":"N/A",
     "environment":"development",
-    "duration":"0.670",
+    "duration": 0.670,
     "date_time":"2016-05-31T18:00:13Z",
     "controller":"N/A",
     "client_version":"N/A",
@@ -87,7 +87,7 @@ defmodule Plug.LoggerJSON do
         "method"         => conn.method,
         "level"          => level,
         "environment"    => Application.get_env(:plug_logger_json, :environment, "N/A"),
-        "duration"       => format_duration(duration),
+        "duration"       => Float.round(duration / 1000, 3),
         "date_time"      => iso8601(:calendar.now_to_datetime(:os.timestamp)),
         "client_version" => Map.get(req_headers, "client_version", "N/A"),
         "client_ip"      => format_ip(Map.get(req_headers, "x-forwarded-for", "N/A")),
@@ -115,11 +115,6 @@ defmodule Plug.LoggerJSON do
     else
       %{k => format_value(v)}
     end
-  end
-
-  @spec format_duration(integer) :: String.t
-  defp format_duration(duration) do
-    Float.to_string(duration / 1000, decimals: 3)
   end
 
   @spec format_ip(String.t) :: String.t
