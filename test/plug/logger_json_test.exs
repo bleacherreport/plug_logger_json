@@ -41,12 +41,11 @@ defmodule Plug.LoggerJSONTest do
     message = String.replace(message, "\n\e[0m", "")
     map     = Poison.decode! message
 
-    assert map["action"] == "N/A"
     assert map["api_version"] == "N/A"
     assert map["app"] == "fake_app"
     assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
-    assert map["controller"] == "N/A"
+    assert map["controller#action"] == "N/A"
     assert map["date_time"]
     assert map["duration"]
     assert map["environment"] == "test"
@@ -71,12 +70,11 @@ defmodule Plug.LoggerJSONTest do
     message = String.replace(message, "\n\e[0m", "")
     map     = Poison.decode! message
 
-    assert map["action"] == "N/A"
     assert map["api_version"] == "N/A"
     assert map["app"] == "fake_app"
     assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
-    assert map["controller"] == "N/A"
+    assert map["controller#action"] == "N/A"
     assert map["date_time"]
     assert map["duration"]
     assert map["environment"] == "test"
@@ -88,7 +86,7 @@ defmodule Plug.LoggerJSONTest do
     assert map["req_headers"] == %{
      "authorization" => "[FILTERED]",
      "content-type" => "application/json"
-   } 
+   }
     assert map["request_id"] == nil
     assert map["server"] == "localhost"
     assert map["state"] == "Sent"
@@ -105,12 +103,11 @@ defmodule Plug.LoggerJSONTest do
     message = String.replace(message, "\n\e[0m", "")
     map     = Poison.decode! message
 
-    assert map["action"] == "show"
     assert map["api_version"] == "N/A"
     assert map["app"] == "fake_app"
     assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
-    assert map["controller"] == "Elixir.Plug.LoggerJSONTest"
+    assert map["controller#action"] == "Elixir.Plug.LoggerJSONTest#show"
     assert map["date_time"]
     assert map["duration"]
     assert map["environment"] == "test"
@@ -142,12 +139,11 @@ defmodule Plug.LoggerJSONTest do
     message = String.replace(message, "\n\e[0m", "")
     map     = Poison.decode! message
 
-    assert map["action"] == "N/A"
     assert map["api_version"] == "N/A"
     assert map["app"] == "fake_app"
     assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
-    assert map["controller"] == "N/A"
+    assert map["controller#action"] == "N/A"
     assert map["date_time"]
     assert map["duration"]
     assert map["environment"] == "test"
@@ -179,12 +175,11 @@ defmodule Plug.LoggerJSONTest do
     message = String.replace(message, "\n\e[0m", "")
     map     = Poison.decode! message
 
-    assert map["action"] == "show"
     assert map["api_version"] == "N/A"
     assert map["app"] == "fake_app"
     assert map["client_ip"] == "209.49.75.165"
     assert map["client_version"] == "N/A"
-    assert map["controller"] == "Elixir.Plug.LoggerJSONTest"
+    assert map["controller#action"] == "Elixir.Plug.LoggerJSONTest#show"
     assert map["date_time"]
     assert map["duration"]
     assert map["environment"] == "test"

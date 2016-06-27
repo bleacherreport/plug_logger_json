@@ -34,11 +34,10 @@ defmodule Plug.LoggerJSON do
     "environment":"development",
     "duration": 0.670,
     "date_time":"2016-05-31T18:00:13Z",
-    "controller":"N/A",
+    "controller#action": "N/A"
     "client_version":"N/A",
     "app":"reaction",
-    "api_version":"N/A",
-    "action":"N/A"
+    "api_version":"N/A"
   }
   ```
 
@@ -148,10 +147,10 @@ defmodule Plug.LoggerJSON do
 
   @spec phoenix_attributes(Plug.Conn.t) :: map
   defp phoenix_attributes(%{private: %{phoenix_format: format, phoenix_controller: controller, phoenix_action: action}}) do
-    %{"format" => format, "controller" => controller, "action" => action}
+    %{"format" => format, "controller#action" => "#{controller}##{action}"}
   end
   defp phoenix_attributes(_) do
-    %{"format" => "N/A", "controller" => "N/A", "action" => "N/A"}
+    %{"format" => "N/A", "controller#action" => "N/A"}
   end
 
   @spec zero_pad(1..3_000, non_neg_integer) :: String.t
