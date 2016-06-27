@@ -42,6 +42,7 @@
         # Priority values are: `low, normal, high, higher`
         # {Credo.Check.Design.AliasUsage, priority: :low},
         # For others you can set parameters
+        {Credo.Check.Design.AliasUsage, false},
         {Credo.Check.Design.DuplicatedCode, mass_threshold: 16, nodes_threshold: 2},
 
         # You can also customize the exit_status of each check.
