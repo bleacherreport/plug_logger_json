@@ -29,12 +29,13 @@ defmodule Plug.LoggerJSON do
       "password":"[FILTERED]"
     },
     "method":"POST",
+    "log_type": "http",
     "level":"info",
     "format":"N/A",
     "environment":"development",
     "duration": 0.670,
     "date_time":"2016-05-31T18:00:13Z",
-    "controller#action": "N/A"
+    "handler": "N/A"
     "client_version":"N/A",
     "app":"reaction",
     "api_version":"N/A"
@@ -84,6 +85,7 @@ defmodule Plug.LoggerJSON do
         "req_headers"    => req_headers,
         "server"         => Application.get_env(:plug_logger_json, :server, "N/A"),
         "method"         => conn.method,
+        "log_type"       => "http",
         "level"          => level,
         "environment"    => Application.get_env(:plug_logger_json, :environment, "N/A"),
         "duration"       => Float.round(duration / 1000, 3),
@@ -147,10 +149,10 @@ defmodule Plug.LoggerJSON do
 
   @spec phoenix_attributes(Plug.Conn.t) :: map
   defp phoenix_attributes(%{private: %{phoenix_format: format, phoenix_controller: controller, phoenix_action: action}}) do
-    %{"format" => format, "controller#action" => "#{controller}##{action}"}
+    %{"format" => format, "handler" => "#{controller}##{action}"}
   end
   defp phoenix_attributes(_) do
-    %{"format" => "N/A", "controller#action" => "N/A"}
+    %{"format" => "N/A", "handler" => "N/A"}
   end
 
   @spec zero_pad(1..3_000, non_neg_integer) :: String.t

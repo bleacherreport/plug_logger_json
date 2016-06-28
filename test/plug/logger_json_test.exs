@@ -45,12 +45,13 @@ defmodule Plug.LoggerJSONTest do
     assert map["app"] == "fake_app"
     assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
-    assert map["controller#action"] == "N/A"
     assert map["date_time"]
     assert map["duration"]
     assert map["environment"] == "test"
     assert map["format"] == "N/A"
+    assert map["handler"] == "N/A"
     assert map["level"] == "info"
+    assert map["log_type"] == "http"
     assert map["method"] == "GET"
     assert map["params"] == %{}
     assert map["path"] == "/"
@@ -74,12 +75,13 @@ defmodule Plug.LoggerJSONTest do
     assert map["app"] == "fake_app"
     assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
-    assert map["controller#action"] == "N/A"
     assert map["date_time"]
     assert map["duration"]
     assert map["environment"] == "test"
     assert map["format"] == "N/A"
+    assert map["handler"] == "N/A"
     assert map["level"] == "info"
+    assert map["log_type"] == "http"
     assert map["method"] == "GET"
     assert map["params"] == %{"fake_param" => "1"}
     assert map["path"] == "/"
@@ -107,12 +109,13 @@ defmodule Plug.LoggerJSONTest do
     assert map["app"] == "fake_app"
     assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
-    assert map["controller#action"] == "Elixir.Plug.LoggerJSONTest#show"
     assert map["date_time"]
     assert map["duration"]
     assert map["environment"] == "test"
     assert map["format"] == "json"
+    assert map["handler"] == "Elixir.Plug.LoggerJSONTest#show"
     assert map["level"] == "info"
+    assert map["log_type"] == "http"
     assert map["method"] == "GET"
     assert map["params"] == %{}
     assert map["path"] == "/"
@@ -143,12 +146,13 @@ defmodule Plug.LoggerJSONTest do
     assert map["app"] == "fake_app"
     assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
-    assert map["controller#action"] == "N/A"
     assert map["date_time"]
     assert map["duration"]
     assert map["environment"] == "test"
     assert map["format"] == "N/A"
+    assert map["handler"] == "N/A"
     assert map["level"] == "info"
+    assert map["log_type"] == "http"
     assert map["method"] == "POST"
     assert map["params"] == %{"reaction" => %{
       "reaction" => "other",
@@ -179,12 +183,13 @@ defmodule Plug.LoggerJSONTest do
     assert map["app"] == "fake_app"
     assert map["client_ip"] == "209.49.75.165"
     assert map["client_version"] == "N/A"
-    assert map["controller#action"] == "Elixir.Plug.LoggerJSONTest#show"
     assert map["date_time"]
     assert map["duration"]
     assert map["environment"] == "test"
     assert map["format"] == "json"
+    assert map["handler"] == "Elixir.Plug.LoggerJSONTest#show"
     assert map["level"] == "info"
+    assert map["log_type"] == "http"
     assert map["method"] == "GET"
     assert map["params"] == %{}
     assert map["path"] == "/"
