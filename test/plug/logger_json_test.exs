@@ -42,23 +42,17 @@ defmodule Plug.LoggerJSONTest do
     map     = Poison.decode! message
 
     assert map["api_version"] == "N/A"
-    assert map["app"] == "fake_app"
     assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
     assert map["date_time"]
     assert map["duration"]
-    assert map["environment"] == "test"
-    assert map["format"] == "N/A"
+    assert map["fastly_duration"] == -1
     assert map["handler"] == "N/A"
-    assert map["level"] == "info"
     assert map["log_type"] == "http"
     assert map["method"] == "GET"
     assert map["params"] == %{}
     assert map["path"] == "/"
-    assert map["req_headers"] == %{}
     assert map["request_id"] == nil
-    assert map["server"] == "localhost"
-    assert map["state"] == "Sent"
     assert map["status"] == "200"
   end
 
@@ -72,26 +66,17 @@ defmodule Plug.LoggerJSONTest do
     map     = Poison.decode! message
 
     assert map["api_version"] == "N/A"
-    assert map["app"] == "fake_app"
     assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
     assert map["date_time"]
     assert map["duration"]
-    assert map["environment"] == "test"
-    assert map["format"] == "N/A"
+    assert map["fastly_duration"] == -1
     assert map["handler"] == "N/A"
-    assert map["level"] == "info"
     assert map["log_type"] == "http"
     assert map["method"] == "GET"
     assert map["params"] == %{"fake_param" => "1"}
     assert map["path"] == "/"
-    assert map["req_headers"] == %{
-     "authorization" => "[FILTERED]",
-     "content-type" => "application/json"
-   }
     assert map["request_id"] == nil
-    assert map["server"] == "localhost"
-    assert map["state"] == "Sent"
     assert map["status"] == "200"
   end
 
@@ -106,23 +91,17 @@ defmodule Plug.LoggerJSONTest do
     map     = Poison.decode! message
 
     assert map["api_version"] == "N/A"
-    assert map["app"] == "fake_app"
     assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
     assert map["date_time"]
     assert map["duration"]
-    assert map["environment"] == "test"
-    assert map["format"] == "json"
+    assert map["fastly_duration"] == -1
     assert map["handler"] == "Elixir.Plug.LoggerJSONTest#show"
-    assert map["level"] == "info"
     assert map["log_type"] == "http"
     assert map["method"] == "GET"
     assert map["params"] == %{}
     assert map["path"] == "/"
-    assert map["req_headers"] == %{}
     assert map["request_id"] == nil
-    assert map["server"] == "localhost"
-    assert map["state"] == "Sent"
     assert map["status"] == "200"
   end
 
@@ -143,15 +122,12 @@ defmodule Plug.LoggerJSONTest do
     map     = Poison.decode! message
 
     assert map["api_version"] == "N/A"
-    assert map["app"] == "fake_app"
     assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
     assert map["date_time"]
     assert map["duration"]
-    assert map["environment"] == "test"
-    assert map["format"] == "N/A"
+    assert map["fastly_duration"] == -1
     assert map["handler"] == "N/A"
-    assert map["level"] == "info"
     assert map["log_type"] == "http"
     assert map["method"] == "POST"
     assert map["params"] == %{"reaction" => %{
@@ -161,10 +137,7 @@ defmodule Plug.LoggerJSONTest do
       "user_id"  => "a2e684ee-2e5f-4e4d-879a-bb253908eef3"
     }}
     assert map["path"] == "/"
-    assert map["req_headers"] == %{"content-type" => "application/json"}
     assert map["request_id"] == nil
-    assert map["server"] == "localhost"
-    assert map["state"] == "Sent"
     assert map["status"] == "200"
   end
 
@@ -180,23 +153,53 @@ defmodule Plug.LoggerJSONTest do
     map     = Poison.decode! message
 
     assert map["api_version"] == "N/A"
-    assert map["app"] == "fake_app"
     assert map["client_ip"] == "209.49.75.165"
     assert map["client_version"] == "N/A"
     assert map["date_time"]
     assert map["duration"]
-    assert map["environment"] == "test"
-    assert map["format"] == "json"
+    assert map["fastly_duration"] == -1
     assert map["handler"] == "Elixir.Plug.LoggerJSONTest#show"
-    assert map["level"] == "info"
     assert map["log_type"] == "http"
     assert map["method"] == "GET"
     assert map["params"] == %{}
     assert map["path"] == "/"
-    assert map["req_headers"] == %{"x-forwarded-for" => "209.49.75.165"}
     assert map["request_id"] == nil
-    assert map["server"] == "localhost"
-    assert map["state"] == "Sent"
     assert map["status"] == "200"
+  end
+
+  test "correct output - client version header" do
+    {_conn, message} = conn(:get, "/")
+                        |> put_req_header("x-client-version", "ios/1.5.4")
+                        |> call
+    message = String.replace(message, "\e[22m", "")
+    message = String.replace(message, "\n\e[0m", "")
+    map     = Poison.decode! message
+
+    assert map["client_version"] == "ios/1.5.4"
+  end
+
+  describe "fastly x-timer header" do
+    test "cached, outputs fastly duration correctly" do
+      {_conn, message} = conn(:get, "/")
+                          |> put_req_header("x-timer", "S1470085542.060224,VS0,VE10")
+                          |> call
+      message  = String.replace(message, "\e[22m", "")
+      message  = String.replace(message, "\n\e[0m", "")
+      map      = Poison.decode! message
+
+      assert map["fastly_duration"] == 10
+    end
+
+    test "cache miss, outputs fastly duration correctly" do
+      {_conn, message} = conn(:get, "/")
+                          |> put_req_header("x-timer", "S1470085542.060224,VS0,VS0")
+                          |> call
+
+      message = String.replace(message, "\e[22m", "")
+      message = String.replace(message, "\n\e[0m", "")
+      map     = Poison.decode! message
+
+      assert map["fastly_duration"] == 0
+    end
   end
 end

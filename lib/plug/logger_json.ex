@@ -3,42 +3,22 @@ defmodule Plug.LoggerJSON do
   A plug for logging basic request information in the format:
   ```json
   {
-    "status":"200",
-    "state":"Sent",
-    "server":"localhost",
-    "request_id":"d90jcl66vp09r8tke3utjsd1pjrg4ln8",
-    "req_headers":{
-      "x-client-version":"android/1.0.0",
-      "x-api-version":"1",
-      "user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3)",
-      "postman-token":"71d00d96-f9c4-edf4-3b8e-ac7bcf3ca33b",
-      "origin":"file://","host":"localhost:4000",
-      "content-type":"application/json",
-      "content-length":"50",
-      "connection":"keep-alive",
-      "cache-control":"no-cache",
-      "authorization":"[FILTERED]",
-      "accept-language":"en-US",
-      "accept-encoding":"gzip,
-      deflate","accept":"*/*"
-    },
-    "remote_ip":"127.0.0.1",
-    "path":"/",
-    "params":{
-      "user":"jkelly",
-      "password":"[FILTERED]"
-    },
-    "method":"POST",
-    "log_type": "http",
-    "level":"info",
-    "format":"N/A",
-    "environment":"development",
-    "duration": 0.670,
-    "date_time":"2016-05-31T18:00:13Z",
-    "handler": "N/A"
-    "client_version":"N/A",
-    "app":"reaction",
-    "api_version":"N/A"
+    "api_version":     "N/A"
+    "client_ip":       "23.235.46.37"
+    "client_version":  "ios/1.6.7",
+    "date_time":       "2016-05-31T18:00:13Z",
+    "duration":        4.670,
+    "fastly_duration": 2.670,
+    "handler":         "fronts#index"
+    "log_type":        "http",
+    "method":          "POST",
+    "params":          {
+                         "user":"jkelly",
+                         "password":"[FILTERED]"
+                       },
+    "path":            "/",
+    "request_id":      "d90jcl66vp09r8tke3utjsd1pjrg4ln8",
+    "status":          "200"
   }
   ```
 
@@ -71,42 +51,54 @@ defmodule Plug.LoggerJSON do
   def log(conn, level, start) do
     Logger.log level, fn ->
       stop        = :os.timestamp()
-      duration    = diff_times(start, stop)
+      duration    = :timer.now_diff(stop, start)
       req_id      = Logger.metadata[:request_id]
       req_headers = format_map_list(conn.req_headers)
       req_params  = format_map_list(conn.params)
 
       %{
-        "status"         => Integer.to_string(conn.status),
-        "state"          => connection_type(conn),
-        "request_id"     => req_id,
-        "path"           => conn.request_path,
-        "params"         => req_params,
-        "req_headers"    => req_headers,
-        "server"         => Application.get_env(:plug_logger_json, :server, "N/A"),
-        "method"         => conn.method,
-        "log_type"       => "http",
-        "level"          => level,
-        "environment"    => Application.get_env(:plug_logger_json, :environment, "N/A"),
-        "duration"       => Float.round(duration / 1000, 3),
-        "date_time"      => iso8601(:calendar.now_to_datetime(:os.timestamp)),
-        "client_version" => Map.get(req_headers, "client_version", "N/A"),
-        "client_ip"      => format_ip(Map.get(req_headers, "x-forwarded-for", "N/A")),
-        "app"            => Application.get_env(:plug_logger_json, :app, "N/A"),
-        "api_version"    => Map.get(req_headers, "api_version", "N/A")
+        "api_version"     => Map.get(req_headers, "accept", "N/A"),
+        "client_ip"       => format_ip(Map.get(req_headers, "x-forwarded-for", "N/A")),
+        "client_version"  => client_version(req_headers),
+        "date_time"       => iso8601(:calendar.now_to_datetime(:os.timestamp)),
+        "duration"        => Float.round(duration / 1000, 3),
+        "fastly_duration" => fastly_duration(req_headers),
+        "log_type"        => "http",
+        "method"          => conn.method,
+        "params"          => req_params,
+        "path"            => conn.request_path,
+        "request_id"      => req_id,
+        "status"          => Integer.to_string(conn.status)
       }
       |> Map.merge(phoenix_attributes(conn))
       |> Poison.encode!
     end
   end
 
-  @spec connection_type(%{atom => atom}) :: String.t
-  defp connection_type(%{state: :chunked}), do: "Chunked"
-  defp connection_type(_), do: "Sent"
+  @spec client_version(%{String.t => String.t}) :: String.t
+  defp client_version(headers) do
+    headers
+    |> Map.get("x-client-version", "N/A")
+    |> case do
+      "N/A" ->
+        Map.get(headers, "user-agent", "N/A")
+      accept_value ->
+        accept_value
+    end
+  end
 
-  @spec diff_times({non_neg_integer, non_neg_integer, non_neg_integer},
-   {non_neg_integer, non_neg_integer ,non_neg_integer}) :: integer
-  defp diff_times(start, stop), do: :timer.now_diff(stop, start)
+  @spec fastly_duration(%{String.t => String.t}) :: integer
+  defp fastly_duration(headers) do
+    x_timer = Map.get(headers, "x-timer", "")
+    case String.split(x_timer, ",") do
+      [_, "VS" <> start, "VE" <> stop] ->
+        String.to_integer(stop) - String.to_integer(start)
+      [_, "VS" <> _, "VS" <> _] ->
+        0
+      _ ->
+        -1
+    end
+  end
 
   @spec filter_values({String.t, String.t}) :: map
   defp filter_values({k,v}) do
@@ -135,7 +127,7 @@ defmodule Plug.LoggerJSON do
   end
 
   defp format_value(value) when is_binary(value) do
-    String.slice(value, 0..100)
+    String.slice(value, 0..500)
   end
 
   defp format_value(value) do
@@ -148,11 +140,11 @@ defmodule Plug.LoggerJSON do
   end
 
   @spec phoenix_attributes(Plug.Conn.t) :: map
-  defp phoenix_attributes(%{private: %{phoenix_format: format, phoenix_controller: controller, phoenix_action: action}}) do
-    %{"format" => format, "handler" => "#{controller}##{action}"}
+  defp phoenix_attributes(%{private: %{phoenix_controller: controller, phoenix_action: action}}) do
+    %{"handler" => "#{controller}##{action}"}
   end
   defp phoenix_attributes(_) do
-    %{"format" => "N/A", "handler" => "N/A"}
+    %{"handler" => "N/A"}
   end
 
   @spec zero_pad(1..3_000, non_neg_integer) :: String.t

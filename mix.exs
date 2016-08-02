@@ -20,7 +20,7 @@ defmodule PlugLoggerJson.Mixfile do
       source_url: "https://github.com/br/plug_logger_json",
       start_permanent: Mix.env == :prod,
       test_coverage: [tool: ExCoveralls],
-      version: "0.0.1",
+      version: "0.1.0",
     ]
   end
 
@@ -28,15 +28,6 @@ defmodule PlugLoggerJson.Mixfile do
     [applications: [:logger]]
   end
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1.0"}
-  #
-  # Type "mix help deps" for more examples and options
   defp deps do
     [
       {:credo,       "~> 0.4",  only: [:dev]},

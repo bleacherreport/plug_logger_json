@@ -35,7 +35,4 @@ config :logger, :console,
   metadata: [:request_id]
 
 config :plug_logger_json,
-  filtered_keys: ["password", "authorization"],
-  app: "fake_app",
-  environment: "test",
-  server: "localhost"
+  filtered_keys: ["password", "authorization"]
