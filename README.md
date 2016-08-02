@@ -13,7 +13,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
   1. Add plug_logger_json to your list of dependencies in `mix.exs`:
 
         def deps do
-          [{:plug_logger_json, "~> 0.0.2"}]
+          [{:plug_logger_json, "~> 0.1.0"}]
         end
 
   2. Ensure plug_logger_json is started before your application:
@@ -25,7 +25,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
 ### Recommended Setup
   * Configure this application
-    * Add to your `config/config.exs` or `config/env_name.exs`:
+    * Add to your `config/config.exs` or `config/env_name.exs` ONLY if you want to filter params or headers:
 
             config :plug_logger_json,
               filtered_keys: ["password", "authorization"],
