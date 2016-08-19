@@ -43,7 +43,7 @@ defmodule PlugLoggerJson.Mixfile do
   defp package do
     [
       files: ["lib", "mix.exs", "README*", "LICENSE*"],
-      licenses: ["MIT"],
+      licenses: ["Apache 2.0"],
       links: %{"GitHub" => "https://github.com/br/plug_logger_json"},
       maintainers: ["John Kelly"]
     ]

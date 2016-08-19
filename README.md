@@ -59,11 +59,10 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
               json_decoder: Poison
 
 ## Contributing
-
-Pull requests are welcomed. Before submitting your pull request, please run:
-* `mix credo --strict`
-* `mix coveralls`
-* `mix dialyzer`
+Before submitting your pull request, please run:
+  * `mix credo --strict`
+  * `mix coveralls`
+  * `mix dialyzer`
 
 Please squash your pull request's commits into a single commit with a message and
-description explaining the commit.
+detailed description explaining the commit.
