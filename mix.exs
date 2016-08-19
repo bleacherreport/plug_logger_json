@@ -13,11 +13,11 @@ defmodule PlugLoggerJson.Mixfile do
       description: "Elixir Plug that formats http request logs as json",
       docs: [extras: ["README.md"]],
       elixir: "~> 1.2",
-      homepage_url: "https://github.com/br/plug_logger_json",
+      homepage_url: "https://github.com/bleacherreport/plug_logger_json",
       name: "Plug Logger JSON",
       package: package,
       preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test],
-      source_url: "https://github.com/br/plug_logger_json",
+      source_url: "https://github.com/bleacherreport/plug_logger_json",
       start_permanent: Mix.env == :prod,
       test_coverage: [tool: ExCoveralls],
       version: "0.1.0",
@@ -44,7 +44,7 @@ defmodule PlugLoggerJson.Mixfile do
     [
       files: ["lib", "mix.exs", "README*", "LICENSE*"],
       licenses: ["Apache 2.0"],
-      links: %{"GitHub" => "https://github.com/br/plug_logger_json"},
+      links: %{"GitHub" => "https://github.com/bleacherreport/plug_logger_json"},
       maintainers: ["John Kelly"]
     ]
   end
