@@ -1,4 +1,6 @@
-# PlugLoggerJson
+# PlugLoggerJson 
+[![Hex pm](http://img.shields.io/hexpm/v/plug_logger_json.svg?style=flat)](https://hex.pm/packages/plug_logger_json)
+[![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://github.com/bleacherreport/plug_logger_json/blob/master/LICENSE)
 
 A comprehenisve JSON logger Plug.
 
