@@ -36,7 +36,7 @@ defmodule PlugLoggerJson.Mixfile do
       {:excoveralls, "~> 0.5",  only: [:test]},
       {:ex_doc,      "~> 0.12", only: [:dev]},
       {:plug,        "~> 1.0"},
-      {:poison, "~> 1.5 or ~> 2.0"}
+      {:poison,      "~> 1.5 or ~> 2.0"}
     ]
   end
 
