@@ -20,7 +20,7 @@ defmodule PlugLoggerJson.Mixfile do
       source_url: "https://github.com/bleacherreport/plug_logger_json",
       start_permanent: Mix.env == :prod,
       test_coverage: [tool: ExCoveralls],
-      version: "0.1.0",
+      version: "0.1.1",
     ]
   end
 
@@ -36,7 +36,7 @@ defmodule PlugLoggerJson.Mixfile do
       {:excoveralls, "~> 0.5",  only: [:test]},
       {:ex_doc,      "~> 0.12", only: [:dev]},
       {:plug,        "~> 1.0"},
-      {:poison,      "~> 1.3"}
+      {:poison,      "~> 1.5 or ~> 2.0"}
     ]
   end
 
