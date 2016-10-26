@@ -29,9 +29,11 @@ defmodule Plug.LoggerJSON do
   Default is `:info`.
   """
 
-  require Logger
   alias Plug.Conn
+
   @behaviour Plug
+
+  require Logger
 
   def init(opts) do
     Keyword.get(opts, :log, :info)
@@ -49,7 +51,7 @@ defmodule Plug.LoggerJSON do
 
   @spec log(Plug.Conn.t, atom, {non_neg_integer, non_neg_integer, non_neg_integer}) :: atom
   def log(conn, level, start) do
-    Logger.log level, fn ->
+    _ = Logger.log level, fn ->
       stop        = :os.timestamp()
       duration    = :timer.now_diff(stop, start)
       req_id      = Logger.metadata[:request_id]
@@ -71,6 +73,18 @@ defmodule Plug.LoggerJSON do
         "status"          => Integer.to_string(conn.status)
       }
       |> Map.merge(phoenix_attributes(conn))
+      |> Poison.encode!
+    end
+  end
+
+  @spec log_error(atom, map, list) :: atom
+  def log_error(kind, reason, stacktrace) do
+    _ = Logger.log :error, fn ->
+      %{
+        "log_type"    => "error",
+        "message"     => Exception.format(kind, reason, stacktrace),
+        "request_id"  => Logger.metadata[:request_id],
+      }
       |> Poison.encode!
     end
   end

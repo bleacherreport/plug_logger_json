@@ -26,7 +26,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
         end
   3. Replace `Plug.Logger` with `Plug.LoggerJSON` in your plug pipeline (endpoint.ex for phoenix apps)
 
-### Recommended Setup
+## Recommended Setup
   * Configure this application
     * Add to your `config/config.exs` or `config/env_name.exs` ONLY if you want to filter params or headers:
 
@@ -60,6 +60,20 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
               parsers: [:urlencoded, :multipart, :json],
               pass: ["*/*"],
               json_decoder: Poison
+
+## Error Logging
+  * In router.ex of your phoenix project or your plug pipeline
+    * Add `require Logger`
+    * Add `use Plug.ErrorHandler`
+    * Add the following two private functions:
+            
+            defp handle_errors(%Plug.Conn{status: 500} = conn, %{kind: kind, reason: reason, stack: stacktrace}) do
+              Plug.LoggerJSON.log_error(kind, reason, stacktrace)
+              send_resp(conn, 500, Poison.encode!(%{errors: %{detail: "Internal server error"}}))
+            end
+
+            defp handle_errors(_, _), do: nil 
+
 
 ## Contributing
 Before submitting your pull request, please run:
