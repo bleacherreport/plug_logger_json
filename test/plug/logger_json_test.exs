@@ -223,7 +223,7 @@ defmodule Plug.LoggerJSONTest do
         [file: 'lib/plug/adapters/cowboy/handler.ex', line: 15]},
        {:cowboy_protocol, :execute, 4, [file: 'src/cowboy_protocol.erl', line: 442]}]
 
-      {conn, _} = conn(:get, "/")
+      {_conn, _} = conn(:get, "/")
                   |> call
 
       {_, message} = get_log(fn -> Plug.LoggerJSON.log_error(:error, %RuntimeError{message: "ERROR"}, stacktrace) end)

@@ -32,9 +32,9 @@ defmodule PlugLoggerJson.Mixfile do
     [
       {:credo,       "~> 0.4",  only: [:dev]},
       {:dialyxir,    "~> 0.3",  only: [:dev]},
-      {:earmark,     "~> 0.1",  only: [:dev]},
+      {:earmark,     "~> 1.0",  only: [:dev]},
       {:excoveralls, "~> 0.5",  only: [:test]},
-      {:ex_doc,      "~> 0.12", only: [:dev]},
+      {:ex_doc,      "~> 0.14", only: [:dev]},
       {:plug,        "~> 1.0"},
       {:poison,      "~> 1.5 or ~> 2.0"}
     ]
