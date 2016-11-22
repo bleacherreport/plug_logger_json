@@ -31,7 +31,7 @@ use Mix.Config
 #
 config :logger, :console,
   format: "$message\n",
-  level: :info,
+  level: :debug,
   metadata: [:request_id]
 
 config :plug_logger_json,

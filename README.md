@@ -24,7 +24,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
         def application do
           [applications: [:plug_logger_json]]
         end
-  3. Replace `Plug.Logger` with `Plug.LoggerJSON` in your plug pipeline (endpoint.ex for phoenix apps)
+  3. Replace `Plug.Logger` with `Plug.LoggerJSON, log: Logger.level` in your plug pipeline (endpoint.ex for phoenix apps)
 
 ## Recommended Setup
   * Configure this application

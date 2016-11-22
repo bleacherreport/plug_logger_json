@@ -8,7 +8,7 @@ defmodule Plug.LoggerJSONTest do
   defmodule MyPlug do
     use Plug.Builder
 
-    plug Plug.LoggerJSON
+    plug Plug.LoggerJSON, log: Logger.level
     plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
@@ -18,6 +18,15 @@ defmodule Plug.LoggerJSONTest do
     defp passthrough(conn, _) do
       Plug.Conn.send_resp(conn, 200, "Passthrough")
     end
+  end
+
+  defp remove_colors(message) do
+    message
+    |> String.replace("\e[36m", "")
+    |> String.replace("\e[31m", "")
+    |> String.replace("\e[22m", "")
+    |> String.replace("\n\e[0m", "")
+    |> String.replace("{\"requ", "{\"requ")
   end
 
   defp call(conn) do
@@ -37,16 +46,16 @@ defmodule Plug.LoggerJSONTest do
   test "correct output - no params or headers" do
     {_conn, message} = conn(:get, "/")
                         |> call
-    message = String.replace(message, "\e[22m", "")
-    message = String.replace(message, "\n\e[0m", "")
-    map     = Poison.decode! message
+    map =
+      message
+      |> remove_colors
+      |> Poison.decode!
 
     assert map["api_version"] == "N/A"
     assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
     assert map["date_time"]
     assert map["duration"]
-    assert map["fastly_duration"] == -1
     assert map["handler"] == "N/A"
     assert map["log_type"] == "http"
     assert map["method"] == "GET"
@@ -61,16 +70,16 @@ defmodule Plug.LoggerJSONTest do
                         |> put_req_header("authorization", "f3443890-6683-4a25-8094-f23cf10b72d0")
                         |> put_req_header("content-type", "application/json")
                         |> call
-    message = String.replace(message, "\e[22m", "")
-    message = String.replace(message, "\n\e[0m", "")
-    map     = Poison.decode! message
+    map =
+      message
+      |> remove_colors
+      |> Poison.decode!
 
     assert map["api_version"] == "N/A"
     assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
     assert map["date_time"]
     assert map["duration"]
-    assert map["fastly_duration"] == -1
     assert map["handler"] == "N/A"
     assert map["log_type"] == "http"
     assert map["method"] == "GET"
@@ -86,16 +95,16 @@ defmodule Plug.LoggerJSONTest do
                         |> put_private(:phoenix_action, :show)
                         |> put_private(:phoenix_format, "json")
                         |> call
-    message = String.replace(message, "\e[22m", "")
-    message = String.replace(message, "\n\e[0m", "")
-    map     = Poison.decode! message
+    map =
+      message
+      |> remove_colors
+      |> Poison.decode!
 
     assert map["api_version"] == "N/A"
     assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
     assert map["date_time"]
     assert map["duration"]
-    assert map["fastly_duration"] == -1
     assert map["handler"] == "Elixir.Plug.LoggerJSONTest#show"
     assert map["log_type"] == "http"
     assert map["method"] == "GET"
@@ -117,16 +126,16 @@ defmodule Plug.LoggerJSONTest do
     {_conn, message} = conn(:post, "/", json)
   |> put_req_header("content-type", "application/json")
   |> call
-    message = String.replace(message, "\e[22m", "")
-    message = String.replace(message, "\n\e[0m", "")
-    map     = Poison.decode! message
+    map =
+      message
+      |> remove_colors
+      |> Poison.decode!
 
     assert map["api_version"] == "N/A"
     assert map["client_ip"] == "N/A"
     assert map["client_version"] == "N/A"
     assert map["date_time"]
     assert map["duration"]
-    assert map["fastly_duration"] == -1
     assert map["handler"] == "N/A"
     assert map["log_type"] == "http"
     assert map["method"] == "POST"
@@ -148,16 +157,17 @@ defmodule Plug.LoggerJSONTest do
                         |> put_private(:phoenix_action, :show)
                         |> put_private(:phoenix_format, "json")
                         |> call
-    message = String.replace(message, "\e[22m", "")
-    message = String.replace(message, "\n\e[0m", "")
-    map     = Poison.decode! message
+
+    map =
+      message
+      |> remove_colors
+      |> Poison.decode!
 
     assert map["api_version"] == "N/A"
     assert map["client_ip"] == "209.49.75.165"
     assert map["client_version"] == "N/A"
     assert map["date_time"]
     assert map["duration"]
-    assert map["fastly_duration"] == -1
     assert map["handler"] == "Elixir.Plug.LoggerJSONTest#show"
     assert map["log_type"] == "http"
     assert map["method"] == "GET"
@@ -171,36 +181,12 @@ defmodule Plug.LoggerJSONTest do
     {_conn, message} = conn(:get, "/")
                         |> put_req_header("x-client-version", "ios/1.5.4")
                         |> call
-    message = String.replace(message, "\e[22m", "")
-    message = String.replace(message, "\n\e[0m", "")
-    map     = Poison.decode! message
+    map =
+      message
+      |> remove_colors
+      |> Poison.decode!
 
     assert map["client_version"] == "ios/1.5.4"
-  end
-
-  describe "fastly x-timer header" do
-    test "cached, outputs fastly duration correctly" do
-      {_conn, message} = conn(:get, "/")
-                          |> put_req_header("x-timer", "S1470085542.060224,VS0,VE10")
-                          |> call
-      message  = String.replace(message, "\e[22m", "")
-      message  = String.replace(message, "\n\e[0m", "")
-      map      = Poison.decode! message
-
-      assert map["fastly_duration"] == 10
-    end
-
-    test "cache miss, outputs fastly duration correctly" do
-      {_conn, message} = conn(:get, "/")
-                          |> put_req_header("x-timer", "S1470085542.060224,VS0,VS0")
-                          |> call
-
-      message = String.replace(message, "\e[22m", "")
-      message = String.replace(message, "\n\e[0m", "")
-      map     = Poison.decode! message
-
-      assert map["fastly_duration"] == 0
-    end
   end
 
   describe "500 error" do
@@ -228,11 +214,10 @@ defmodule Plug.LoggerJSONTest do
 
       {_, message} = get_log(fn -> Plug.LoggerJSON.log_error(:error, %RuntimeError{message: "ERROR"}, stacktrace) end)
 
-      message = String.replace(message, "\e[31m", "")
-      message = String.replace(message, "\e[22m", "")
-      message = String.replace(message, "\n\e[0m", "")
-      message = String.replace(message, "{\"requ", "{\"requ")
-      error_log = Poison.decode! message
+    error_log =
+      message
+      |> remove_colors
+      |> Poison.decode!
 
       assert error_log["log_type"] == "error"
       assert error_log["message"] == "** (RuntimeError) ERROR\n    web/controllers/reaction_controller.ex:53: Plug.LoggerJSONTest.MyPlug.index/2\n    web/controllers/reaction_controller.ex:1: Plug.LoggerJSONTest.MyPlug.action/2\n    web/controllers/reaction_controller.ex:1: Plug.LoggerJSONTest.MyPlug.phoenix_controller_pipeline/2\n    lib/reactions/endpoint.ex:1: Plug.LoggerJSONTest.MyPlug.instrument/4\n    lib/phoenix/router.ex:261: Plug.LoggerJSONTest.MyPlug.dispatch/2\n    web/router.ex:1: Plug.LoggerJSONTest.MyPlug.do_call/2\n    lib/plug/error_handler.ex:64: Plug.LoggerJSONTest.MyPlug.call/2\n    lib/reactions/endpoint.ex:1: Plug.LoggerJSONTest.MyPlug.phoenix_pipeline/1\n    lib/reactions/endpoint.ex:1: Plug.LoggerJSONTest.MyPlug.call/2\n    lib/plug/adapters/cowboy/handler.ex:15: Plug.Adapters.Cowboy.Handler.upgrade/4\n    src/cowboy_protocol.erl:442: :cowboy_protocol.execute/4\n"
