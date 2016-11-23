@@ -8,7 +8,6 @@ defmodule Plug.LoggerJSON do
     "client_version":  "ios/1.6.7",
     "date_time":       "2016-05-31T18:00:13Z",
     "duration":        4.670,
-    "fastly_duration": 2.670,
     "handler":         "fronts#index"
     "log_type":        "http",
     "method":          "POST",
@@ -50,28 +49,21 @@ defmodule Plug.LoggerJSON do
   end
 
   @spec log(Plug.Conn.t, atom, {non_neg_integer, non_neg_integer, non_neg_integer}) :: atom
-  def log(conn, level, start) do
-    _ = Logger.log level, fn ->
-      stop        = :os.timestamp()
-      duration    = :timer.now_diff(stop, start)
-      req_id      = Logger.metadata[:request_id]
-      req_headers = format_map_list(conn.req_headers)
-      req_params  = format_map_list(conn.params)
-
-      %{
-        "api_version"     => Map.get(req_headers, "accept", "N/A"),
-        "client_ip"       => format_ip(Map.get(req_headers, "x-forwarded-for", "N/A")),
-        "client_version"  => client_version(req_headers),
-        "date_time"       => iso8601(:calendar.now_to_datetime(:os.timestamp)),
-        "duration"        => Float.round(duration / 1000, 3),
-        "fastly_duration" => fastly_duration(req_headers),
-        "log_type"        => "http",
-        "method"          => conn.method,
-        "params"          => req_params,
-        "path"            => conn.request_path,
-        "request_id"      => req_id,
-        "status"          => Integer.to_string(conn.status)
-      }
+  def log(conn, :error, start), do: log(conn, :info, start)
+  def log(conn, :info, start) do
+    _ = Logger.log :info, fn ->
+      conn
+      |> basic_logging(start)
+      |> Map.merge(phoenix_attributes(conn))
+      |> Poison.encode!
+    end
+  end
+  def log(conn, :warn, start), do: log(conn, :debug, start)
+  def log(conn, :debug, start) do
+    _ = Logger.log :info, fn ->
+      conn
+      |> basic_logging(start)
+      |> Map.merge(debug_logging(conn))
       |> Map.merge(phoenix_attributes(conn))
       |> Poison.encode!
     end
@@ -79,7 +71,7 @@ defmodule Plug.LoggerJSON do
 
   @spec log_error(atom, map, list) :: atom
   def log_error(kind, reason, stacktrace) do
-    _ = Logger.log :error, fn ->
+    _ = Logger.log :info, fn ->
       %{
         "log_type"    => "error",
         "message"     => Exception.format(kind, reason, stacktrace),
@@ -87,6 +79,24 @@ defmodule Plug.LoggerJSON do
       }
       |> Poison.encode!
     end
+  end
+
+  defp basic_logging(conn, start) do
+    stop        = :os.timestamp()
+    duration    = :timer.now_diff(stop, start)
+    req_id      = Logger.metadata[:request_id]
+    req_headers = format_map_list(conn.req_headers)
+
+    %{
+      "api_version"     => Map.get(req_headers, "accept", "N/A"),
+      "date_time"       => iso8601(:calendar.now_to_datetime(:os.timestamp)),
+      "duration"        => Float.round(duration / 1000, 3),
+      "log_type"        => "http",
+      "method"          => conn.method,
+      "path"            => conn.request_path,
+      "request_id"      => req_id,
+      "status"          => Integer.to_string(conn.status)
+    }
   end
 
   @spec client_version(%{String.t => String.t}) :: String.t
@@ -101,17 +111,15 @@ defmodule Plug.LoggerJSON do
     end
   end
 
-  @spec fastly_duration(%{String.t => String.t}) :: integer
-  defp fastly_duration(headers) do
-    x_timer = Map.get(headers, "x-timer", "")
-    case String.split(x_timer, ",") do
-      [_, "VS" <> start, "VE" <> stop] ->
-        String.to_integer(stop) - String.to_integer(start)
-      [_, "VS" <> _, "VS" <> _] ->
-        0
-      _ ->
-        -1
-    end
+  defp debug_logging(conn) do
+    req_headers = format_map_list(conn.req_headers)
+    req_params  = format_map_list(conn.params)
+
+    %{
+      "client_ip"       => format_ip(Map.get(req_headers, "x-forwarded-for", "N/A")),
+      "client_version"  => client_version(req_headers),
+      "params"          => req_params,
+    }
   end
 
   @spec filter_values({String.t, String.t}) :: map
