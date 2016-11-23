@@ -16,7 +16,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
   1. Add plug_logger_json to your list of dependencies in `mix.exs`:
 
         def deps do
-          [{:plug_logger_json, "~> 0.2.0"}]
+          [{:plug_logger_json, "~> 0.3.0"}]
         end
 
   2. Ensure plug_logger_json is started before your application:
@@ -38,7 +38,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
             config :logger, :console,
               format: "$message\n",
-              level: :info,
+              level: :info, #You may want to make this an env variable to change verbosity of the logs
               metadata: [:request_id]
 
   * Configure the logger (file)
@@ -74,6 +74,10 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
             defp handle_errors(_, _), do: nil 
 
+## Log Verbosity
+  * Plug Logger JSON supports two levels of logging. 
+  * Info / Error will log api_version, date_time, duration, log_type, method, path, request_id, & status.
+  * Warn / Debug log levels will include everything from info plus client_id, client_version, and params / request bodies.
 
 ## Contributing
 Before submitting your pull request, please run:
