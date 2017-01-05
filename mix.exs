@@ -5,7 +5,7 @@ defmodule PlugLoggerJson.Mixfile do
     [
       app: :plug_logger_json,
       build_embedded: Mix.env == :prod,
-      deps: deps,
+      deps: deps(),
       dialyzer: [
         plt_add_deps: true,
         plt_file: ".local.plt"
@@ -15,7 +15,7 @@ defmodule PlugLoggerJson.Mixfile do
       elixir: "~> 1.2",
       homepage_url: "https://github.com/bleacherreport/plug_logger_json",
       name: "Plug Logger JSON",
-      package: package,
+      package: package(),
       preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test],
       source_url: "https://github.com/bleacherreport/plug_logger_json",
       start_permanent: Mix.env == :prod,
@@ -33,8 +33,8 @@ defmodule PlugLoggerJson.Mixfile do
       {:credo,       "~> 0.5",  only: [:dev]},
       {:dialyxir,    "~> 0.4",  only: [:dev]},
       {:earmark,     "~> 1.0",  only: [:dev]},
-      {:excoveralls, "~> 0.5",  only: [:test]},
       {:ex_doc,      "~> 0.14", only: [:dev]},
+      {:excoveralls, "~> 0.5",  only: [:test]},
       {:plug,        "~> 1.0"},
       {:poison,      "~> 1.5 or ~> 2.0 or ~> 3.0"}
     ]
