@@ -1,6 +1,10 @@
 # Changelog
 
-## v0.3
+## v0.3.1
+* Update depedencies
+* Fix Elixir 1.4 warnings
+
+## v0.3.0
 * Breaking Changes!
 * Drop the `fastly_duration` log value
 * Add the ability to change verbosity. Log levels warn/debug will return everything from 0.2 minus fastly_duration. Log levels info/error will return a subset of warn/debug that is missing params, client_ip, & client_version.
