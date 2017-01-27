@@ -11,7 +11,7 @@ defmodule PlugLoggerJson.Mixfile do
       ],
       description: "Elixir Plug that formats http request logs as json",
       docs: [extras: ["README.md"]],
-      elixir: "~> 1.2",
+      elixir: "~> 1.3",
       homepage_url: "https://github.com/bleacherreport/plug_logger_json",
       name: "Plug Logger JSON",
       package: package(),
