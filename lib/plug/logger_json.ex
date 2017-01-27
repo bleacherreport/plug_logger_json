@@ -1,5 +1,5 @@
 defmodule Plug.LoggerJSON do
-  @moduledoc """
+  @moduledoc ~S(
   A plug for logging basic request information in the format:
   ```json
   {
@@ -26,7 +26,7 @@ defmodule Plug.LoggerJSON do
   ## Options
   * `:log` - The log level at which this plug should log its request info.
   Default is `:info`.
-  """
+  )
 
   alias Plug.Conn
 
@@ -34,11 +34,22 @@ defmodule Plug.LoggerJSON do
 
   require Logger
 
+  @typedoc """
+  Type for a plug option
+  """
+  @type opts :: binary | tuple | atom | integer | float | [opts] | %{opts => opts}
+
+  @typedoc """
+  Type for time
+  """
+  @type time :: {non_neg_integer(), non_neg_integer(), non_neg_integer()}
+
+  @spec init(opts) :: opts
   def init(opts) do
     Keyword.get(opts, :log, :info)
   end
 
-  @spec call(Plug.Conn.t, atom) :: Plug.Conn.t
+  @spec call(Plug.Conn.t(), opts) :: Plug.Conn.t()
   def call(conn, level) do
     start = :os.timestamp()
 
@@ -48,7 +59,7 @@ defmodule Plug.LoggerJSON do
     end)
   end
 
-  @spec log(Plug.Conn.t, atom, {non_neg_integer, non_neg_integer, non_neg_integer}) :: atom
+  @spec log(Plug.Conn.t(), atom(), time()) :: atom() | no_return()
   def log(conn, :error, start), do: log(conn, :info, start)
   def log(conn, :info, start) do
     _ = Logger.log :info, fn ->
@@ -69,7 +80,7 @@ defmodule Plug.LoggerJSON do
     end
   end
 
-  @spec log_error(atom, map, list) :: atom
+  @spec log_error(atom(), map(), list()) :: atom()
   def log_error(kind, reason, stacktrace) do
     _ = Logger.log :info, fn ->
       %{
@@ -99,7 +110,7 @@ defmodule Plug.LoggerJSON do
     }
   end
 
-  @spec client_version(%{String.t => String.t}) :: String.t
+  @spec client_version(%{String.t() => String.t()}) :: String.t()
   defp client_version(headers) do
     headers
     |> Map.get("x-client-version", "N/A")
@@ -122,7 +133,7 @@ defmodule Plug.LoggerJSON do
     }
   end
 
-  @spec filter_values({String.t, String.t}) :: map
+  @spec filter_values({String.t(), String.t()}) :: map()
   defp filter_values({k,v}) do
     filtered_keys = Application.get_env(:plug_logger_json, :filtered_keys, [])
     if Enum.member?(filtered_keys, k) do
@@ -132,7 +143,7 @@ defmodule Plug.LoggerJSON do
     end
   end
 
-  @spec format_ip(String.t) :: String.t
+  @spec format_ip(String.t()) :: String.t()
   defp format_ip("N/A") do
     "N/A"
   end
@@ -140,7 +151,7 @@ defmodule Plug.LoggerJSON do
     hd(String.split(x_forwarded_for, ", "))
   end
 
-  @spec format_map_list([%{String.t => String.t}]) :: map
+  @spec format_map_list([%{String.t() => String.t()}]) :: map()
   defp format_map_list(list) do
     list
     |> Enum.take(20)
@@ -161,7 +172,7 @@ defmodule Plug.LoggerJSON do
     zero_pad(hour, 2) <> ":" <> zero_pad(minute, 2) <> ":" <> zero_pad(second, 2) <> "Z"
   end
 
-  @spec phoenix_attributes(Plug.Conn.t) :: map
+  @spec phoenix_attributes(map()) :: map()
   defp phoenix_attributes(%{private: %{phoenix_controller: controller, phoenix_action: action}}) do
     %{"handler" => "#{controller}##{action}"}
   end
@@ -169,7 +180,7 @@ defmodule Plug.LoggerJSON do
     %{"handler" => "N/A"}
   end
 
-  @spec zero_pad(1..3_000, non_neg_integer) :: String.t
+  @spec zero_pad(1..3_000, non_neg_integer()) :: String.t()
   defp zero_pad(val, count) do
     num = Integer.to_string(val)
     :binary.copy("0", count - byte_size(num)) <> num
