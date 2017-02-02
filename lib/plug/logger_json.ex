@@ -106,7 +106,7 @@ defmodule Plug.LoggerJSON do
       "method"          => conn.method,
       "path"            => conn.request_path,
       "request_id"      => req_id,
-      "status"          => Integer.to_string(conn.status)
+      "status"          => conn.status
     }
   end
 
