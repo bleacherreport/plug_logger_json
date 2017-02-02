@@ -1,6 +1,8 @@
 # Changelog
 
 ## Master
+* Breaking Changes!
+* Change `status` field to an integer type instead of string
 * Drop official support of Elixir 1.2 and OTP 18
 * Add support for Elixir 1.4 and OTP 19.1 & 19.2
 * Update depedencies
