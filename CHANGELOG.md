@@ -1,6 +1,7 @@
 # Changelog
 
 ## Master
+* Add Erlang/OTP 19.3 to test suite
 
 ## v0.4.0
 * Breaking Changes!
