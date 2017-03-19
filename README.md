@@ -16,7 +16,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
   1. Add plug_logger_json to your list of dependencies in `mix.exs`:
 
         def deps do
-          [{:plug_logger_json, "~> 0.3.1"}]
+          [{:plug_logger_json, "~> 0.4.0"}]
         end
 
   2. Ensure plug_logger_json is started before your application:
