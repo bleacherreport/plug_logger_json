@@ -82,7 +82,7 @@ defmodule Plug.LoggerJSON do
 
   @spec log_error(atom(), map(), list()) :: atom()
   def log_error(kind, reason, stacktrace) do
-    _ = Logger.log :info, fn ->
+    _ = Logger.log :error, fn ->
       %{
         "log_type"    => "error",
         "message"     => Exception.format(kind, reason, stacktrace),
