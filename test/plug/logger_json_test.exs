@@ -8,13 +8,7 @@ defmodule Plug.LoggerJSONTest do
   defmodule MyPlug do
     use Plug.Builder
 
-    extra_paths = [
-      {"user_id", [:assigns, :user, :user_id]},
-      {"other_id", [:private, :private_resource, :id]},
-      {"should_not_appear", [:private, :does_not_exist]}
-    ]
-
-    plug Plug.LoggerJSON, log: Logger.level, extra_paths: extra_paths
+    plug Plug.LoggerJSON, log: Logger.level, extra_attributes_fn: &MyPlug.extra_attributes/1
     plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
@@ -23,6 +17,18 @@ defmodule Plug.LoggerJSONTest do
 
     defp passthrough(conn, _) do
       Plug.Conn.send_resp(conn, 200, "Passthrough")
+    end
+
+    def extra_attributes(conn) do
+      map = %{
+        "user_id" => get_in(conn.assigns, [:user, :user_id]),
+        "other_id" => get_in(conn.private, [:private_resource, :id]),
+        "should_not_appear" => conn.private[:does_not_exist]
+      }
+
+      map
+      |> Enum.filter(&(&1 !== nil))
+      |> Enum.into(%{})
     end
   end
 

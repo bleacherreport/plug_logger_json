@@ -1,5 +1,5 @@
 defmodule Plug.LoggerJSON do
-  @moduledoc ~S(
+  @moduledoc """
   A plug for logging basic request information in the format:
   ```json
   {
@@ -26,28 +26,36 @@ defmodule Plug.LoggerJSON do
   ## Options
   * `:log` - The log level at which this plug should log its request info.
   Default is `:info`.
-  * `:extra_paths` - Extra paths that should be logged to the request.
-  Default is `[]`. Please see "Extra Paths" section for more information.
+  * `:extra_attributes_fn` - Function to call with `conn` to add additional
+  fields to the requests. Default is `nil`. Please see "Extra Fields" section
+  for more information.
 
-  ## Extra Paths
+  ## Extra Fields
 
-  Additional data can be logged alongside the request by specifying them in
-  the following format to the `:extra_paths` key:
+  Additional data can be logged alongside the request by specifying a function
+  to call which returns a map:
 
-        extra_paths: [
-          {"user_id", [:assigns, :user, :user_id]},
-          {"other_id", [:private, :private_resource, :id]},
-          {"should_not_appear", [:private, :does_not_exist]}
-        ]
+        def extra_attributes(conn) do
+          map = %{
+            "user_id" => get_in(conn.assigns, [:user, :user_id]),
+            "other_id" => get_in(conn.private, [:private_resource, :id]),
+            "should_not_appear" => conn.private[:does_not_exist]
+          }
+
+          map
+          |> Enum.filter(&(&1 !== nil))
+          |> Enum.into(%{})
+        end
+
+        plug Plug.LoggerJSON, log: Logger.level,
+                              extra_attributes_fn: &MyPlug.extra_attributes/1
 
   In this example, the `:user_id` is retrieved from `conn.assigns.user.user_id`
-  and added to the log if it exists. If the path is not found then the
-  additional field is not logged. The first argument in the pair is the key
-  that will be logged, the second argument is the path relative to conn that
-  the value will be found. The first entry in the list must be `:assigns` or
-  `:private`. It is also a requirement that the value is serialiazable as JSON
-  by the Poison library, otherwise an error will be raised.
-  )
+  and added to the log if it exists. In the example, any values that are `nil`
+  are filtered from the map. It is a requirement that the value is
+  serialiazable as JSON by the Poison library, otherwise an error will be raised
+  when attempting to encode the value.
+  """
 
   alias Plug.Conn
 
@@ -137,19 +145,10 @@ defmodule Plug.LoggerJSON do
   end
 
   defp extra_attributes(conn, opts) do
-    paths = Keyword.get(opts, :extra_paths, [])
-    Enum.reduce(paths, %{}, fn {key, path}, acc ->
-      {map, path} =
-        case path do
-          [:assigns | tail] -> {conn.assigns, tail}
-          [:private | tail] -> {conn.private, tail}
-          _ -> {%{}, []}
-        end
-      case get_in(map, path) do
-        nil -> acc
-        val -> Map.put(acc, key, val)
-      end
-    end)
+    case Keyword.get(opts, :extra_attributes_fn) do
+      fun when is_function(fun) -> fun.(conn)
+      _ -> %{}
+    end
   end
 
   @spec client_version(%{String.t() => String.t()}) :: String.t()
