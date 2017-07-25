@@ -8,7 +8,13 @@ defmodule Plug.LoggerJSONTest do
   defmodule MyPlug do
     use Plug.Builder
 
-    plug Plug.LoggerJSON, log: Logger.level
+    extra_paths = [
+      {"user_id", [:assigns, :user, :user_id]},
+      {"other_id", [:private, :private_resource, :id]},
+      {"should_not_appear", [:private, :does_not_exist]}
+    ]
+
+    plug Plug.LoggerJSON, log: Logger.level, extra_paths: extra_paths
     plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
@@ -187,6 +193,22 @@ defmodule Plug.LoggerJSONTest do
       |> Poison.decode!
 
     assert map["client_version"] == "ios/1.5.4"
+  end
+
+  test "correct output - custom paths" do
+    {_conn, message} = conn(:get, "/")
+    |> put_req_header("x-client-version", "ios/1.5.4")
+    |> assign(:user, %{user_id: "123"})
+    |> put_private(:private_resource, %{id: 456})
+    |> call()
+    map =
+      message
+      |> remove_colors
+      |> Poison.decode!
+
+    assert map["user_id"] == "123"
+    assert map["other_id"] == 456
+    refute map["should_not_appear"]
   end
 
   describe "500 error" do
