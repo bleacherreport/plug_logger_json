@@ -84,6 +84,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 ## Extra Attributes
   * Additional data can be logged alongside the request by specifying a function
   to call which returns a map:
+        
         def extra_attributes(conn) do
           map = %{
             "user_id" => get_in(conn.assigns, [:user, :user_id]),
@@ -96,6 +97,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
         end
         plug Plug.LoggerJSON, log: Logger.level,
                               extra_attributes_fn: &MyPlug.extra_attributes/1
+                              
   * In this example, the `:user_id` is retrieved from `conn.assigns.user.user_id`
   and added to the log if it exists. In the example, any values that are `nil`
   are filtered from the map. It is a requirement that the value is
