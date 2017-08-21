@@ -1,5 +1,5 @@
 defmodule Plug.LoggerJSON do
-  @moduledoc ~S(
+  @moduledoc """
   A plug for logging basic request information in the format:
   ```json
   {
@@ -26,7 +26,36 @@ defmodule Plug.LoggerJSON do
   ## Options
   * `:log` - The log level at which this plug should log its request info.
   Default is `:info`.
-  )
+  * `:extra_attributes_fn` - Function to call with `conn` to add additional
+  fields to the requests. Default is `nil`. Please see "Extra Fields" section
+  for more information.
+
+  ## Extra Fields
+
+  Additional data can be logged alongside the request by specifying a function
+  to call which returns a map:
+
+        def extra_attributes(conn) do
+          map = %{
+            "user_id" => get_in(conn.assigns, [:user, :user_id]),
+            "other_id" => get_in(conn.private, [:private_resource, :id]),
+            "should_not_appear" => conn.private[:does_not_exist]
+          }
+
+          map
+          |> Enum.filter(&(&1 !== nil))
+          |> Enum.into(%{})
+        end
+
+        plug Plug.LoggerJSON, log: Logger.level,
+                              extra_attributes_fn: &MyPlug.extra_attributes/1
+
+  In this example, the `:user_id` is retrieved from `conn.assigns.user.user_id`
+  and added to the log if it exists. In the example, any values that are `nil`
+  are filtered from the map. It is a requirement that the value is
+  serialiazable as JSON by the Poison library, otherwise an error will be raised
+  when attempting to encode the value.
+  """
 
   alias Plug.Conn
 
@@ -45,37 +74,42 @@ defmodule Plug.LoggerJSON do
   @type time :: {non_neg_integer(), non_neg_integer(), non_neg_integer()}
 
   @spec init(opts) :: opts
-  def init(opts) do
-    Keyword.get(opts, :log, :info)
-  end
+  def init(opts), do: opts
 
   @spec call(Plug.Conn.t(), opts) :: Plug.Conn.t()
-  def call(conn, level) do
+  def call(conn, level_or_opts) when is_atom(level_or_opts) do
+    call(conn, level: level_or_opts)
+  end
+  def call(conn, opts) do
+    level = Keyword.get(opts, :log, :info)
     start = :os.timestamp()
 
     Conn.register_before_send(conn, fn conn ->
-      :ok = log(conn, level, start)
+      :ok = log(conn, level, start, opts)
       conn
     end)
   end
 
-  @spec log(Plug.Conn.t(), atom(), time()) :: atom() | no_return()
-  def log(conn, :error, start), do: log(conn, :info, start)
-  def log(conn, :info, start) do
+  @spec log(Plug.Conn.t(), atom(), time(), opts) :: atom() | no_return()
+  def log(conn, level, start, opts \\ [])
+  def log(conn, :error, start, opts), do: log(conn, :info, start, opts)
+  def log(conn, :info, start, opts) do
     _ = Logger.log :info, fn ->
       conn
       |> basic_logging(start)
       |> Map.merge(phoenix_attributes(conn))
+      |> Map.merge(extra_attributes(conn, opts))
       |> Poison.encode!
     end
   end
-  def log(conn, :warn, start), do: log(conn, :debug, start)
-  def log(conn, :debug, start) do
+  def log(conn, :warn, start, opts), do: log(conn, :debug, start, opts)
+  def log(conn, :debug, start, opts) do
     _ = Logger.log :info, fn ->
       conn
       |> basic_logging(start)
       |> Map.merge(debug_logging(conn))
       |> Map.merge(phoenix_attributes(conn))
+      |> Map.merge(extra_attributes(conn, opts))
       |> Poison.encode!
     end
   end
@@ -108,6 +142,13 @@ defmodule Plug.LoggerJSON do
       "request_id"      => req_id,
       "status"          => conn.status
     }
+  end
+
+  defp extra_attributes(conn, opts) do
+    case Keyword.get(opts, :extra_attributes_fn) do
+      fun when is_function(fun) -> fun.(conn)
+      _ -> %{}
+    end
   end
 
   @spec client_version(%{String.t() => String.t()}) :: String.t()
