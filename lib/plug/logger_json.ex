@@ -175,7 +175,7 @@ defmodule Plug.LoggerJSON do
   end
 
   @spec filter_values({String.t(), String.t()}) :: map()
-  defp filter_values({k,v}) do
+  defp filter_values({k, v}) do
     filtered_keys = Application.get_env(:plug_logger_json, :filtered_keys, [])
     if Enum.member?(filtered_keys, k) do
       %{k => "[FILTERED]"}

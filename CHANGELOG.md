@@ -1,6 +1,11 @@
 # Changelog
 
 ## Master
+
+## 0.5.0
+* Extra attributes configration that allows for logging custom metrics
+* Add Elixir 1.5.1
+* Add Erlang/OTP 20
 * Add Erlang/OTP 19.3 to test suite
 
 ## v0.4.0

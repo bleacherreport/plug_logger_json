@@ -9,6 +9,9 @@ A comprehenisve JSON logger Plug.
   * Plug
   * Poison
 
+## Elixir & Erlang Support
+  * The support policy is to support the last 2 major versions of Erlang and the three last minor versions of Elixir.
+
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
@@ -16,7 +19,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
   1. Add plug_logger_json to your list of dependencies in `mix.exs`:
 
         def deps do
-          [{:plug_logger_json, "~> 0.4.0"}]
+          [{:plug_logger_json, "~> 0.5.0"}]
         end
 
   2. Ensure plug_logger_json is started before your application:
@@ -25,6 +28,10 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
           [applications: [:plug_logger_json]]
         end
   3. Replace `Plug.Logger` with `Plug.LoggerJSON, log: Logger.level` in your plug pipeline (endpoint.ex for phoenix apps)
+
+  or for extra attributes (see extra attributes section)
+
+  3. Replace `Plug.Logger` with `Plug.LoggerJSON, log: Logger.level, extra_attributes_fn: &MyPlug.extra_attributes/1` in your plug pipeline (endpoint.ex for phoenix apps)
 
 ## Recommended Setup
   * Configure this application
@@ -74,6 +81,29 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
             defp handle_errors(_, _), do: nil 
 
+## Extra Attributes
+  * Additional data can be logged alongside the request by specifying a function
+  to call which returns a map:
+        
+        def extra_attributes(conn) do
+          map = %{
+            "user_id" => get_in(conn.assigns, [:user, :user_id]),
+            "other_id" => get_in(conn.private, [:private_resource, :id]),
+            "should_not_appear" => conn.private[:does_not_exist]
+          }
+          map
+          |> Enum.filter(&(&1 !== nil))
+          |> Enum.into(%{})
+        end
+        plug Plug.LoggerJSON, log: Logger.level,
+                              extra_attributes_fn: &MyPlug.extra_attributes/1
+                              
+  * In this example, the `:user_id` is retrieved from `conn.assigns.user.user_id`
+  and added to the log if it exists. In the example, any values that are `nil`
+  are filtered from the map. It is a requirement that the value is
+  serialiazable as JSON by the Poison library, otherwise an error will be raised
+  when attempting to encode the value.
+
 ## Log Verbosity
   * Plug Logger JSON supports two levels of logging. 
   * Info / Error will log api_version, date_time, duration, log_type, method, path, request_id, & status.
@@ -84,6 +114,7 @@ Before submitting your pull request, please run:
   * `mix credo --strict`
   * `mix coveralls`
   * `mix dialyzer`
+  *  Update Changelog
 
 Please squash your pull request's commits into a single commit with a message and
 detailed description explaining the commit.
