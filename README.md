@@ -35,10 +35,11 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
 ## Recommended Setup
   * Configure this application
-    * Add to your `config/config.exs` or `config/env_name.exs` ONLY if you want to filter params or headers:
+    * Add to your `config/config.exs` or `config/env_name.exs` if you want to filter params or headers or suppress any logged keys:
 
             config :plug_logger_json,
               filtered_keys: ["password", "authorization"],
+              suppressed_keys: ["api_version", "log_type"]
 
   * Configure the logger (console)
     * Add to your `config/config.exs` or `config/env_name.exs`:

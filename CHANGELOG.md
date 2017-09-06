@@ -1,6 +1,7 @@
 # Changelog
 
 ## Master
+* Allow built-in logging keys to be suppressed
 
 ## 0.5.0
 * Extra attributes configration that allows for logging custom metrics
