@@ -2,6 +2,9 @@
 
 ## Master
 
+## 0.5.1
+* Fix bug where logging level was set incorrectly when set to :debug
+
 ## 0.5.0
 * Extra attributes configration that allows for logging custom metrics
 * Add Elixir 1.5.1

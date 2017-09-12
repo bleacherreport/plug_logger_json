@@ -104,7 +104,7 @@ defmodule Plug.LoggerJSON do
   end
   def log(conn, :warn, start, opts), do: log(conn, :debug, start, opts)
   def log(conn, :debug, start, opts) do
-    _ = Logger.log :info, fn ->
+    _ = Logger.log :debug, fn ->
       conn
       |> basic_logging(start)
       |> Map.merge(debug_logging(conn))
