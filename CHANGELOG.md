@@ -1,6 +1,7 @@
 # Changelog
 
 ## Master
+* Allow built-in logging keys to be suppressed
 
 ## 0.5.1
 * Fix bug where logging level was set incorrectly when set to :debug

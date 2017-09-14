@@ -132,7 +132,7 @@ defmodule Plug.LoggerJSON do
     req_id      = Logger.metadata[:request_id]
     req_headers = format_map_list(conn.req_headers)
 
-    %{
+    log_json = %{
       "api_version"     => Map.get(req_headers, "accept", "N/A"),
       "date_time"       => iso8601(:calendar.now_to_datetime(:os.timestamp)),
       "duration"        => Float.round(duration / 1000, 3),
@@ -142,6 +142,7 @@ defmodule Plug.LoggerJSON do
       "request_id"      => req_id,
       "status"          => conn.status
     }
+    Map.drop(log_json, Application.get_env(:plug_logger_json, :suppressed_keys, []))
   end
 
   defp extra_attributes(conn, opts) do
