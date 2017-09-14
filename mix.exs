@@ -24,7 +24,7 @@ defmodule PlugLoggerJson.Mixfile do
   end
 
   def application do
-    [applications: [:logger]]
+    [applications: [:logger, :plug]]
   end
 
   defp deps do
