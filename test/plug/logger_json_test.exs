@@ -5,10 +5,10 @@ defmodule Plug.LoggerJSONTest do
   import ExUnit.CaptureIO
   require Logger
 
-  defmodule MyPlug do
+  defmodule MyDebugPlug do
     use Plug.Builder
 
-    plug Plug.LoggerJSON, log: Logger.level, extra_attributes_fn: &MyPlug.extra_attributes/1
+    plug Plug.LoggerJSON, log: :debug, extra_attributes_fn: &__MODULE__.extra_attributes/1
     plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
@@ -32,6 +32,36 @@ defmodule Plug.LoggerJSONTest do
     end
   end
 
+  defmodule MyInfoPlug do
+    use Plug.Builder
+
+    plug Plug.LoggerJSON, log: :info
+    plug Plug.Parsers,
+    parsers: [:urlencoded, :multipart, :json],
+    pass: ["*/*"],
+    json_decoder: Poison
+    plug :passthrough
+
+    defp passthrough(conn, _) do
+      Plug.Conn.send_resp(conn, 200, "Passthrough")
+    end
+  end
+
+  defmodule MyInfoPlugWithIncludeDebugLogging do
+    use Plug.Builder
+
+    plug Plug.LoggerJSON, log: :info, include_debug_logging: true
+    plug Plug.Parsers,
+    parsers: [:urlencoded, :multipart, :json],
+    pass: ["*/*"],
+    json_decoder: Poison
+    plug :passthrough
+
+    defp passthrough(conn, _) do
+      Plug.Conn.send_resp(conn, 200, "Passthrough")
+    end
+  end
+
   defp remove_colors(message) do
     message
     |> String.replace("\e[36m", "")
@@ -41,8 +71,8 @@ defmodule Plug.LoggerJSONTest do
     |> String.replace("{\"requ", "{\"requ")
   end
 
-  defp call(conn) do
-    get_log fn -> MyPlug.call(conn, []) end
+  defp call(conn, plug \\ MyDebugPlug) do
+    get_log fn -> plug.call(conn, []) end
   end
 
   defp get_log(func) do
@@ -51,7 +81,7 @@ defmodule Plug.LoggerJSONTest do
       Logger.flush()
     end)
 
-  {Process.get(:get_log), data}
+    {Process.get(:get_log), data}
   end
 
 
@@ -101,6 +131,38 @@ defmodule Plug.LoggerJSONTest do
     assert map["status"] == 200
   end
 
+  test "doesn't include debug log lines for MyInfoPlug" do
+    {_conn, message} = conn(:get, "/", fake_param: "1")
+                        |> put_req_header("x-forwarded-for", "209.49.75.165")
+                        |> put_req_header("x-client-version", "ios/1.5.4")
+                        |> call(MyInfoPlug)
+
+    map =
+      message
+      |> remove_colors
+      |> Poison.decode!
+
+    assert map["client_ip"] == nil
+    assert map["client_version"] == nil
+    assert map["params"] == nil
+  end
+
+  test "include debug log lines for MyInfoPlugWithIncludeDebugLogging" do
+    {_conn, message} = conn(:get, "/", fake_param: "1")
+                        |> put_req_header("x-forwarded-for", "209.49.75.165")
+                        |> put_req_header("x-client-version", "ios/1.5.4")
+                        |> call(MyInfoPlugWithIncludeDebugLogging)
+
+    map =
+      message
+      |> remove_colors
+      |> Poison.decode!
+
+    assert map["client_ip"] == "209.49.75.165"
+    assert map["client_version"] == "ios/1.5.4"
+    assert map["params"] == %{"fake_param" => "1"}
+  end
+
   test "correct output - Phoenix" do
     {_conn, message} = conn(:get, "/")
                         |> put_private(:phoenix_controller, Plug.LoggerJSONTest)
@@ -135,9 +197,11 @@ defmodule Plug.LoggerJSONTest do
     }}
     |> Poison.encode!
 
-    {_conn, message} = conn(:post, "/", json)
-  |> put_req_header("content-type", "application/json")
-  |> call
+    {_conn, message} =
+      conn(:post, "/", json)
+      |> put_req_header("content-type", "application/json")
+      |> call
+
     map =
       message
       |> remove_colors
@@ -219,20 +283,20 @@ defmodule Plug.LoggerJSONTest do
 
   describe "500 error" do
     test "logs the error" do
-      stacktrace = [{MyPlug, :index, 2,
+      stacktrace = [{MyDebugPlug, :index, 2,
         [file: 'web/controllers/reaction_controller.ex', line: 53]},
-       {MyPlug, :action, 2,
+       {MyDebugPlug, :action, 2,
         [file: 'web/controllers/reaction_controller.ex', line: 1]},
-       {MyPlug, :phoenix_controller_pipeline, 2,
+       {MyDebugPlug, :phoenix_controller_pipeline, 2,
         [file: 'web/controllers/reaction_controller.ex', line: 1]},
-       {MyPlug, :instrument, 4,
+       {MyDebugPlug, :instrument, 4,
         [file: 'lib/reactions/endpoint.ex', line: 1]},
-       {MyPlug, :dispatch, 2, [file: 'lib/phoenix/router.ex', line: 261]},
-       {MyPlug, :do_call, 2, [file: 'web/router.ex', line: 1]},
-       {MyPlug, :call, 2, [file: 'lib/plug/error_handler.ex', line: 64]},
-       {MyPlug, :phoenix_pipeline, 1,
+       {MyDebugPlug, :dispatch, 2, [file: 'lib/phoenix/router.ex', line: 261]},
+       {MyDebugPlug, :do_call, 2, [file: 'web/router.ex', line: 1]},
+       {MyDebugPlug, :call, 2, [file: 'lib/plug/error_handler.ex', line: 64]},
+       {MyDebugPlug, :phoenix_pipeline, 1,
         [file: 'lib/reactions/endpoint.ex', line: 1]},
-       {MyPlug, :call, 2, [file: 'lib/reactions/endpoint.ex', line: 1]},
+       {MyDebugPlug, :call, 2, [file: 'lib/reactions/endpoint.ex', line: 1]},
        {Plug.Adapters.Cowboy.Handler, :upgrade, 4,
         [file: 'lib/plug/adapters/cowboy/handler.ex', line: 15]},
        {:cowboy_protocol, :execute, 4, [file: 'src/cowboy_protocol.erl', line: 442]}]
@@ -248,7 +312,7 @@ defmodule Plug.LoggerJSONTest do
       |> Poison.decode!
 
       assert error_log["log_type"] == "error"
-      assert error_log["message"] == "** (RuntimeError) ERROR\n    web/controllers/reaction_controller.ex:53: Plug.LoggerJSONTest.MyPlug.index/2\n    web/controllers/reaction_controller.ex:1: Plug.LoggerJSONTest.MyPlug.action/2\n    web/controllers/reaction_controller.ex:1: Plug.LoggerJSONTest.MyPlug.phoenix_controller_pipeline/2\n    lib/reactions/endpoint.ex:1: Plug.LoggerJSONTest.MyPlug.instrument/4\n    lib/phoenix/router.ex:261: Plug.LoggerJSONTest.MyPlug.dispatch/2\n    web/router.ex:1: Plug.LoggerJSONTest.MyPlug.do_call/2\n    lib/plug/error_handler.ex:64: Plug.LoggerJSONTest.MyPlug.call/2\n    lib/reactions/endpoint.ex:1: Plug.LoggerJSONTest.MyPlug.phoenix_pipeline/1\n    lib/reactions/endpoint.ex:1: Plug.LoggerJSONTest.MyPlug.call/2\n    (plug) lib/plug/adapters/cowboy/handler.ex:15: Plug.Adapters.Cowboy.Handler.upgrade/4\n    src/cowboy_protocol.erl:442: :cowboy_protocol.execute/4\n"
+      assert error_log["message"] == "** (RuntimeError) ERROR\n    web/controllers/reaction_controller.ex:53: Plug.LoggerJSONTest.MyDebugPlug.index/2\n    web/controllers/reaction_controller.ex:1: Plug.LoggerJSONTest.MyDebugPlug.action/2\n    web/controllers/reaction_controller.ex:1: Plug.LoggerJSONTest.MyDebugPlug.phoenix_controller_pipeline/2\n    lib/reactions/endpoint.ex:1: Plug.LoggerJSONTest.MyDebugPlug.instrument/4\n    lib/phoenix/router.ex:261: Plug.LoggerJSONTest.MyDebugPlug.dispatch/2\n    web/router.ex:1: Plug.LoggerJSONTest.MyDebugPlug.do_call/2\n    lib/plug/error_handler.ex:64: Plug.LoggerJSONTest.MyDebugPlug.call/2\n    lib/reactions/endpoint.ex:1: Plug.LoggerJSONTest.MyDebugPlug.phoenix_pipeline/1\n    lib/reactions/endpoint.ex:1: Plug.LoggerJSONTest.MyDebugPlug.call/2\n    (plug) lib/plug/adapters/cowboy/handler.ex:15: Plug.Adapters.Cowboy.Handler.upgrade/4\n    src/cowboy_protocol.erl:442: :cowboy_protocol.execute/4\n"
       assert error_log["request_id"] ==  nil
     end
   end
