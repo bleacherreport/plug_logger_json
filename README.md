@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/bleacherreport/plug_logger_json.svg?branch=master)](https://travis-ci.org/bleacherreport/plug_logger_json)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://github.com/bleacherreport/plug_logger_json/blob/master/LICENSE)
 
-A comprehenisve JSON logger Plug.
+A comprehensive JSON logger Plug.
 
 ## Dependencies
   * Plug
