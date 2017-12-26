@@ -1,7 +1,6 @@
 # Changelog
 
 ## Master
-* Reduce String allocations (Allocates fewer strings on each log)
 * Allow built-in logging keys to be suppressed
 
 ## 0.5.0
