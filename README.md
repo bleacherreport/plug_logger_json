@@ -14,17 +14,17 @@ A comprehensive JSON logger Plug.
 
 ## Installation
   1. Add plug_logger_json to your list of dependencies in `mix.exs`:
-
+```
         def deps do
           [{:plug_logger_json, "~> 0.6.0"}]
         end
-
+```
   2. Ensure plug_logger_json is started before your application (Skip if using Elixir 1.4 or greater):
-
+```
         def application do
           [applications: [:plug_logger_json]]
         end
-
+```
   3. Replace `Plug.Logger` with `Plug.LoggerJSON, log: Logger.level` in your plug pipeline (endpoint.ex for phoenix apps)
 
   or for extra attributes (see extra attributes section)
