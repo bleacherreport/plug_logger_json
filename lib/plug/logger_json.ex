@@ -211,50 +211,21 @@ defmodule Plug.LoggerJSON do
   end
 
   defp iso8601({{year, month, day}, {hour, minute, second}}) do
-    [
-      zero_pad(year, 4),
-      "-",
-      zero_pad(month, 2),
-      "-",
-      zero_pad(day, 2),
-      "T",
-      zero_pad(hour, 2),
-      ":",
-      zero_pad(minute, 2),
-      ":",
-      zero_pad(second, 2),
-      "Z"
-    ]
-    |> IO.iodata_to_binary
+    zero_pad(year, 4) <> "-" <> zero_pad(month, 2) <> "-" <> zero_pad(day, 2) <> "T" <>
+    zero_pad(hour, 2) <> ":" <> zero_pad(minute, 2) <> ":" <> zero_pad(second, 2) <> "Z"
   end
 
   @spec phoenix_attributes(map()) :: map()
   defp phoenix_attributes(%{private: %{phoenix_controller: controller, phoenix_action: action}}) do
-    %{
-      "handler" => IO.iodata_to_binary([
-        Atom.to_charlist(controller),
-        "#",
-        Atom.to_charlist(action)
-      ])
-    }
+    %{"handler" => "#{controller}##{action}"}
   end
   defp phoenix_attributes(_) do
     %{"handler" => "N/A"}
   end
 
-  @spec zero_pad(1..3_000, non_neg_integer()) :: list()
-  defp zero_pad(val, desired_size) do
-    list =  Integer.digits(val)
-    size =  Enum.count(list)
-
-    zero_pad_helper(list, desired_size - size)
-  end
-
-  defp zero_pad_helper(val, desired_size) when desired_size > 0 do
-    zero_pad_helper([0|val], desired_size - 1)
-  end
-  defp zero_pad_helper(val, _) do
-    val
-    |> Enum.map(&(Integer.to_charlist(&1)))
+  @spec zero_pad(1..3_000, non_neg_integer()) :: String.t()
+  defp zero_pad(val, count) do
+    num = Integer.to_string(val)
+    :binary.copy("0", count - byte_size(num)) <> num
   end
 end
