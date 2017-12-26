@@ -19,7 +19,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
   1. Add plug_logger_json to your list of dependencies in `mix.exs`:
 
         def deps do
-          [{:plug_logger_json, "~> 0.5.0"}]
+          [{:plug_logger_json, "~> 0.6.0"}]
         end
 
   2. Ensure plug_logger_json is started before your application:
@@ -74,18 +74,18 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
     * Add `require Logger`
     * Add `use Plug.ErrorHandler`
     * Add the following two private functions:
-            
+
             defp handle_errors(%Plug.Conn{status: 500} = conn, %{kind: kind, reason: reason, stack: stacktrace}) do
               Plug.LoggerJSON.log_error(kind, reason, stacktrace)
               send_resp(conn, 500, Poison.encode!(%{errors: %{detail: "Internal server error"}}))
             end
 
-            defp handle_errors(_, _), do: nil 
+            defp handle_errors(_, _), do: nil
 
 ## Extra Attributes
   * Additional data can be logged alongside the request by specifying a function
   to call which returns a map:
-        
+
         def extra_attributes(conn) do
           map = %{
             "user_id" => get_in(conn.assigns, [:user, :user_id]),
@@ -98,7 +98,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
         end
         plug Plug.LoggerJSON, log: Logger.level,
                               extra_attributes_fn: &MyPlug.extra_attributes/1
-                              
+
   * In this example, the `:user_id` is retrieved from `conn.assigns.user.user_id`
   and added to the log if it exists. In the example, any values that are `nil`
   are filtered from the map. It is a requirement that the value is
@@ -106,9 +106,17 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
   when attempting to encode the value.
 
 ## Log Verbosity
-  * Plug Logger JSON supports two levels of logging. 
+  * Plug Logger JSON supports two levels of logging.
   * Info / Error will log api_version, date_time, duration, log_type, method, path, request_id, & status.
   * Warn / Debug log levels will include everything from info plus client_id, client_version, and params / request bodies.
+  * You are able to override these defaults by setting the option `include_debug_logging`.
+    * Setting this to false will mean the extra debug fields (client_id, client_version, and params) will NOT get logged.
+    * Setting this to true will mean the extra fields will get logged.
+    * Not setting this option will keep the defaults above.
+    * Eg.
+
+            plug Plug.LoggerJSON, log: Logger.level,
+                                  include_debug_logging: true
 
 ## Contributing
 Before submitting your pull request, please run:

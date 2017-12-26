@@ -3,6 +3,9 @@
 ## Master
 * Allow built-in logging keys to be suppressed
 
+## 0.6.0
+* Extra configration that allows control of logging debug fields.
+
 ## 0.5.0
 * Extra attributes configration that allows for logging custom metrics
 * Add Elixir 1.5.1

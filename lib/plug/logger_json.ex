@@ -93,25 +93,10 @@ defmodule Plug.LoggerJSON do
   @spec log(Plug.Conn.t(), atom(), time(), opts) :: atom() | no_return()
   def log(conn, level, start, opts \\ [])
   def log(conn, :error, start, opts), do: log(conn, :info, start, opts)
-  def log(conn, :info, start, opts) do
-    _ = Logger.log :info, fn ->
-      conn
-      |> basic_logging(start)
-      |> Map.merge(phoenix_attributes(conn))
-      |> Map.merge(extra_attributes(conn, opts))
-      |> Poison.encode!
-    end
-  end
+  def log(conn, :info, start, opts), do: log_message(conn, :info, start, opts)
   def log(conn, :warn, start, opts), do: log(conn, :debug, start, opts)
   def log(conn, :debug, start, opts) do
-    _ = Logger.log :info, fn ->
-      conn
-      |> basic_logging(start)
-      |> Map.merge(debug_logging(conn))
-      |> Map.merge(phoenix_attributes(conn))
-      |> Map.merge(extra_attributes(conn, opts))
-      |> Poison.encode!
-    end
+    log_message(conn, :info, start, Keyword.put_new(opts, :include_debug_logging, true))
   end
 
   @spec log_error(atom(), map(), list()) :: atom()
@@ -122,6 +107,18 @@ defmodule Plug.LoggerJSON do
         "message"     => Exception.format(kind, reason, stacktrace),
         "request_id"  => Logger.metadata[:request_id],
       }
+      |> Poison.encode!
+    end
+  end
+
+  @spec log_message(Plug.Conn.t(), atom(), time(), opts) :: atom()
+  defp log_message(conn, level, start, opts) do
+    Logger.log level, fn ->
+      conn
+      |> basic_logging(start)
+      |> Map.merge(debug_logging(conn, opts))
+      |> Map.merge(phoenix_attributes(conn))
+      |> Map.merge(extra_attributes(conn, opts))
       |> Poison.encode!
     end
   end
@@ -164,15 +161,19 @@ defmodule Plug.LoggerJSON do
     end
   end
 
-  defp debug_logging(conn) do
-    req_headers = format_map_list(conn.req_headers)
-    req_params  = format_map_list(conn.params)
-
-    %{
-      "client_ip"       => format_ip(Map.get(req_headers, "x-forwarded-for", "N/A")),
-      "client_version"  => client_version(req_headers),
-      "params"          => req_params,
-    }
+  @spec debug_logging(Plug.Conn.t(), opts) :: map()
+  defp debug_logging(conn, opts) do
+    case Keyword.get(opts, :include_debug_logging) do
+      true ->
+        req_headers = format_map_list(conn.req_headers)
+        %{
+          "client_ip"       => format_ip(Map.get(req_headers, "x-forwarded-for", "N/A")),
+          "client_version"  => client_version(req_headers),
+          "params"          => format_map_list(conn.params),
+        }
+      _ ->
+        %{}
+    end
   end
 
   @spec filter_values({String.t(), String.t()}) :: map()
