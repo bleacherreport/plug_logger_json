@@ -13,20 +13,18 @@ A comprehensive JSON logger Plug.
   * The support policy is to support the last 2 major versions of Erlang and the three last minor versions of Elixir.
 
 ## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
-
   1. Add plug_logger_json to your list of dependencies in `mix.exs`:
 
         def deps do
           [{:plug_logger_json, "~> 0.6.0"}]
         end
 
-  2. Ensure plug_logger_json is started before your application:
+  2. Ensure plug_logger_json is started before your application (Skip if using Elixir 1.4 or greater):
 
         def application do
           [applications: [:plug_logger_json]]
         end
+
   3. Replace `Plug.Logger` with `Plug.LoggerJSON, log: Logger.level` in your plug pipeline (endpoint.ex for phoenix apps)
 
   or for extra attributes (see extra attributes section)
@@ -50,7 +48,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
               metadata: [:request_id]
 
   * Configure the logger (file)
-    * Add `{:logger_file_backend, "~> 0.0.7"}` to your mix.exs
+    * Add `{:logger_file_backend, "~> 0.0.10"}` to your mix.exs
     * Run `mix deps.get`
     * Add to your `config/config.exs` or `config/env_name.exs`:
 

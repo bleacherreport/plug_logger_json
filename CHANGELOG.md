@@ -8,6 +8,7 @@
 * Allow built-in logging keys to be suppressed
 * Add Elixir 1.5.3 official support
 * Add Erlang/OTP 20.1 official support
+* Update dev & test dependencies
 
 ## 0.5.0
 * Extra attributes configration that allows for logging custom metrics
