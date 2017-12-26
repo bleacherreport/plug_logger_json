@@ -1,10 +1,13 @@
 # Changelog
 
 ## Master
-* Allow built-in logging keys to be suppressed
+
 
 ## 0.6.0
 * Extra configration that allows control of logging debug fields.
+* Allow built-in logging keys to be suppressed
+* Add Elixir 1.5.3 official support
+* Add Erlang/OTP 20.1 official support
 
 ## 0.5.0
 * Extra attributes configration that allows for logging custom metrics
