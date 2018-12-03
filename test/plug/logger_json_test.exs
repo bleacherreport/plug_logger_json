@@ -12,7 +12,7 @@ defmodule Plug.LoggerJSONTest do
     plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
-    json_decoder: Poison
+    json_decoder: Jason
     plug :passthrough
 
     defp passthrough(conn, _) do
@@ -39,7 +39,7 @@ defmodule Plug.LoggerJSONTest do
     plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
-    json_decoder: Poison
+    json_decoder: Jason
     plug :passthrough
 
     defp passthrough(conn, _) do
@@ -54,7 +54,7 @@ defmodule Plug.LoggerJSONTest do
     plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
-    json_decoder: Poison
+    json_decoder: Jason
     plug :passthrough
 
     defp passthrough(conn, _) do
@@ -91,7 +91,7 @@ defmodule Plug.LoggerJSONTest do
     map =
       message
       |> remove_colors
-      |> Poison.decode!
+      |> Jason.decode!
 
     assert map["api_version"] == "N/A"
     assert map["client_ip"] == "N/A"
@@ -115,7 +115,7 @@ defmodule Plug.LoggerJSONTest do
     map =
       message
       |> remove_colors
-      |> Poison.decode!
+      |> Jason.decode!
 
     assert map["api_version"] == "N/A"
     assert map["client_ip"] == "N/A"
@@ -140,7 +140,7 @@ defmodule Plug.LoggerJSONTest do
     map =
       message
       |> remove_colors
-      |> Poison.decode!
+      |> Jason.decode!
 
     assert map["client_ip"] == nil
     assert map["client_version"] == nil
@@ -156,7 +156,7 @@ defmodule Plug.LoggerJSONTest do
     map =
       message
       |> remove_colors
-      |> Poison.decode!
+      |> Jason.decode!
 
     assert map["client_ip"] == "209.49.75.165"
     assert map["client_version"] == "ios/1.5.4"
@@ -172,7 +172,7 @@ defmodule Plug.LoggerJSONTest do
     map =
       message
       |> remove_colors
-      |> Poison.decode!
+      |> Jason.decode!
 
     assert map["api_version"] == "N/A"
     assert map["client_ip"] == "N/A"
@@ -195,7 +195,7 @@ defmodule Plug.LoggerJSONTest do
       "type"     => "emoji",
       "user_id"  => "a2e684ee-2e5f-4e4d-879a-bb253908eef3"
     }}
-    |> Poison.encode!
+    |> Jason.encode!
 
     {_conn, message} =
       conn(:post, "/", json)
@@ -205,7 +205,7 @@ defmodule Plug.LoggerJSONTest do
     map =
       message
       |> remove_colors
-      |> Poison.decode!
+      |> Jason.decode!
 
     assert map["api_version"] == "N/A"
     assert map["client_ip"] == "N/A"
@@ -237,7 +237,7 @@ defmodule Plug.LoggerJSONTest do
     map =
       message
       |> remove_colors
-      |> Poison.decode!
+      |> Jason.decode!
 
     assert map["api_version"] == "N/A"
     assert map["client_ip"] == "209.49.75.165"
@@ -260,7 +260,7 @@ defmodule Plug.LoggerJSONTest do
     map =
       message
       |> remove_colors
-      |> Poison.decode!
+      |> Jason.decode!
 
     assert map["client_version"] == "ios/1.5.4"
   end
@@ -274,7 +274,7 @@ defmodule Plug.LoggerJSONTest do
     map =
       message
       |> remove_colors
-      |> Poison.decode!
+      |> Jason.decode!
 
     assert map["user_id"] == "123"
     assert map["other_id"] == 456
@@ -309,7 +309,7 @@ defmodule Plug.LoggerJSONTest do
     error_log =
       message
       |> remove_colors
-      |> Poison.decode!
+      |> Jason.decode!
 
       assert error_log["log_type"] == "error"
       assert error_log["message"] == "** (RuntimeError) ERROR\n    web/controllers/reaction_controller.ex:53: Plug.LoggerJSONTest.MyDebugPlug.index/2\n    web/controllers/reaction_controller.ex:1: Plug.LoggerJSONTest.MyDebugPlug.action/2\n    web/controllers/reaction_controller.ex:1: Plug.LoggerJSONTest.MyDebugPlug.phoenix_controller_pipeline/2\n    lib/reactions/endpoint.ex:1: Plug.LoggerJSONTest.MyDebugPlug.instrument/4\n    lib/phoenix/router.ex:261: Plug.LoggerJSONTest.MyDebugPlug.dispatch/2\n    web/router.ex:1: Plug.LoggerJSONTest.MyDebugPlug.do_call/2\n    lib/plug/error_handler.ex:64: Plug.LoggerJSONTest.MyDebugPlug.call/2\n    lib/reactions/endpoint.ex:1: Plug.LoggerJSONTest.MyDebugPlug.phoenix_pipeline/1\n    lib/reactions/endpoint.ex:1: Plug.LoggerJSONTest.MyDebugPlug.call/2\n    (plug) lib/plug/adapters/cowboy/handler.ex:15: Plug.Adapters.Cowboy.Handler.upgrade/4\n    src/cowboy_protocol.erl:442: :cowboy_protocol.execute/4\n"
