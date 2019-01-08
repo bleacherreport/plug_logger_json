@@ -44,7 +44,7 @@ defmodule PlugLoggerJson.Mixfile do
       files: ["lib", "mix.exs", "README*", "LICENSE*"],
       licenses: ["Apache 2.0"],
       links: %{"GitHub" => "https://github.com/bleacherreport/plug_logger_json"},
-      maintainers: ["John Kelly"]
+      maintainers: ["John Kelly, Ben Marx"]
     ]
   end
 end
