@@ -15,7 +15,12 @@ defmodule PlugLoggerJson.Mixfile do
       homepage_url: "https://github.com/bleacherreport/plug_logger_json",
       name: "Plug Logger JSON",
       package: package(),
-      preferred_cli_env: [coveralls: :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ],
       source_url: "https://github.com/bleacherreport/plug_logger_json",
       start_permanent: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls],
@@ -35,7 +40,8 @@ defmodule PlugLoggerJson.Mixfile do
       {:ex_doc, "~> 0.19.3", only: [:dev]},
       {:excoveralls, "~> 0.10.5", only: [:test]},
       {:plug, "~> 1.0"},
-      {:poison, "~> 1.5 or ~> 2.0 or ~> 3.0 or ~> 4.0"}
+      {:poison, "~> 1.5 or ~> 2.0 or ~> 3.0 or ~> 4.0", optional: true},
+      {:jason, "~> 1.1", optional: true}
     ]
   end
 

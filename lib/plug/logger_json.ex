@@ -21,7 +21,13 @@ defmodule Plug.LoggerJSON do
   }
   ```
 
-  To use it, just plug it into the desired module.
+  To use it, set json_encoder parameter in your config:
+
+  ```
+  config :plug_logger_json, json_encoder: Jason
+  ```
+
+  and plug it into the desired module:
   plug Plug.LoggerJSON, log: :debug
   ## Options
   * `:log` - The log level at which this plug should log its request info.
@@ -105,12 +111,11 @@ defmodule Plug.LoggerJSON do
   def log_error(kind, reason, stacktrace) do
     _ =
       Logger.log(:error, fn ->
-        %{
+        encode!(%{
           "log_type" => "error",
           "message" => Exception.format(kind, reason, stacktrace),
           "request_id" => Logger.metadata()[:request_id]
-        }
-        |> Poison.encode!()
+        })
       end)
   end
 
@@ -122,7 +127,7 @@ defmodule Plug.LoggerJSON do
       |> Map.merge(debug_logging(conn, opts))
       |> Map.merge(phoenix_attributes(conn))
       |> Map.merge(extra_attributes(conn, opts))
-      |> Poison.encode!()
+      |> encode!()
     end)
   end
 
@@ -253,5 +258,10 @@ defmodule Plug.LoggerJSON do
   defp zero_pad(val, count) do
     num = Integer.to_string(val)
     :binary.copy("0", count - byte_size(num)) <> num
+  end
+
+  def encode!(value) do
+    encoder = Application.get_env(:plug_logger_json, :json_encoder)
+    encoder.encode!(value)
   end
 end
