@@ -5,3 +5,4 @@ erl_crash.dump
 *.ez
 .local.plt
 doc/
+.elixir_ls
