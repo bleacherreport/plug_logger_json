@@ -15,7 +15,7 @@ defmodule PlugLoggerJson.Mixfile do
       homepage_url: "https://github.com/bleacherreport/plug_logger_json",
       name: "Plug Logger JSON",
       package: package(),
-      preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test],
+      preferred_cli_env: [coveralls: :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test],
       source_url: "https://github.com/bleacherreport/plug_logger_json",
       start_permanent: Mix.env == :prod,
       test_coverage: [tool: ExCoveralls],
@@ -44,7 +44,7 @@ defmodule PlugLoggerJson.Mixfile do
       files: ["lib", "mix.exs", "README*", "LICENSE*"],
       licenses: ["Apache 2.0"],
       links: %{"GitHub" => "https://github.com/bleacherreport/plug_logger_json"},
-      maintainers: ["John Kelly"]
+      maintainers: ["John Kelly, Ben Marx"]
     ]
   end
 end
