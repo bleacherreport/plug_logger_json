@@ -2,6 +2,8 @@
 
 ## Master
 
+## 0.7.0
+* Extra configuration that allows setting the maximum length to store for query params
 
 ## 0.6.0
 * Extra configration that allows control of logging debug fields.

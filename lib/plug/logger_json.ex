@@ -203,7 +203,8 @@ defmodule Plug.LoggerJSON do
   end
 
   defp format_value(value) when is_binary(value) do
-    String.slice(value, 0..500)
+    max = Application.get_env(:plug_logger_json, :param_max_length, 500)
+    String.slice(value, 0..max)
   end
 
   defp format_value(value) do
