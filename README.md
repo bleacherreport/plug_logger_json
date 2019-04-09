@@ -153,13 +153,13 @@ In this example, the `:user_id` is retrieved from `conn.assigns.user.user_id` an
     
   * `warn` / `debug` will log everything from info and:
   
-    * client_id,
+    * client_ip,
     * client_version,
     * params / request_body.
 
 The above are default. It is possible to override them by setting a `include_debug_logging` option to:
 
-  * `false` – means the extra debug fields (client_id, client_version, and params) WILL NOT get logged.
+  * `false` – means the extra debug fields (client_ip, client_version, and params) WILL NOT get logged.
   * `true` – means the extra fields WILL get logged.
   * Not setting this option will keep the defaults above.
 
