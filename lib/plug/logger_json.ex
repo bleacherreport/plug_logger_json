@@ -183,6 +183,11 @@ defmodule Plug.LoggerJSON do
     end
   end
 
+  @spec filter_values(struct(), [binary()]) :: binary()
+  defp filter_values(%{__struct__: mod} = struct, _) when is_atom(mod) do
+    inspect(struct)
+  end
+
   @spec filter_values(map(), [binary()]) :: [{binary(), any()}]
   defp filter_values(%{} = map, filters) do
     Enum.into(map, %{}, fn {k, v} ->
