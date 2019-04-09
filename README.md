@@ -20,7 +20,7 @@ The support policy is to support the last 2 major versions of Erlang and the thr
 
    ```elixir
    def deps do
-     [{:plug_logger_json, "~> 0.6.0"}]
+     [{:plug_logger_json, "~> 0.7.0"}]
    end
    ```
    
@@ -48,6 +48,14 @@ config :plug_logger_json,
   filtered_keys: ["password", "authorization"],
   suppressed_keys: ["api_version", "log_type"]
 ```
+
+The request parameters are truncated to a max length of 500 characters by default. This can be overridden by setting the `param_max_length` option.
+
+```elixir
+config :plug_logger_json,
+  param_max_length: 5000
+```
+
 
 ### Configure the logger (console)
   
