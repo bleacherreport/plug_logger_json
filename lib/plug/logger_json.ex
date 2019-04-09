@@ -183,16 +183,23 @@ defmodule Plug.LoggerJSON do
     end
   end
 
-  @spec filter_values({String.t(), String.t()}) :: map()
-  defp filter_values({k, v}) do
-    filtered_keys = Application.get_env(:plug_logger_json, :filtered_keys, [])
-
-    if Enum.member?(filtered_keys, k) do
-      %{k => "[FILTERED]"}
-    else
-      %{k => format_value(v)}
-    end
+  @spec filter_values(map(), [binary()]) :: [{binary(), any()}]
+  defp filter_values(%{} = map, filters) do
+    Enum.into(map, %{}, fn {k, v} ->
+      if is_binary(k) and k in filters do
+        {k, "[FILTERED]"}
+      else
+        {k, filter_values(v, filters)}
+      end
+    end)
   end
+
+  @spec filter_values([{binary(), any()}], [binary()]) :: [{binary(), any()}]
+  defp filter_values(list, filters) when is_list(list) do
+    Enum.map(list, &filter_values(&1, filters))
+  end
+
+  defp filter_values(other, _filters), do: format_value(other)
 
   @spec format_ip(String.t()) :: String.t()
   defp format_ip("N/A") do
@@ -203,12 +210,11 @@ defmodule Plug.LoggerJSON do
     hd(String.split(x_forwarded_for, ", "))
   end
 
-  @spec format_map_list([%{String.t() => String.t()}]) :: map()
-  defp format_map_list(list) do
-    list
-    |> Enum.take(20)
-    |> Enum.map(&filter_values/1)
-    |> Enum.reduce(%{}, &Map.merge(&2, &1))
+  @spec format_map_list(Enumerable.t()) :: map()
+  defp format_map_list(enumerable) do
+    enumerable
+    |> filter_values(Application.get_env(:plug_logger_json, :filtered_keys, []))
+    |> Enum.into(%{})
   end
 
   defp format_value(value) when is_binary(value) do

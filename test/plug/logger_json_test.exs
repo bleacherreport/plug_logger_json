@@ -310,6 +310,21 @@ defmodule Plug.LoggerJSONTest do
     refute map["should_not_appear"]
   end
 
+  test "correct output - nested filtered keys" do
+    Application.put_env(:plug_logger_json, :filtered_keys, ["password"])
+
+    user =
+      conn(:post, "/", %{user: %{password: "secret", username: "me"}})
+      |> call()
+      |> elem(1)
+      |> remove_colors()
+      |> Poison.decode!()
+      |> get_in(["params", "user"])
+
+    assert user["password"] == "[FILTERED]"
+    assert user["username"] == "me"
+  end
+
   describe "500 error" do
     test "logs the error" do
       stacktrace = [
