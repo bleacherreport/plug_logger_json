@@ -310,6 +310,33 @@ defmodule Plug.LoggerJSONTest do
     refute map["should_not_appear"]
   end
 
+  test "correct output - nested filtered keys" do
+    Application.put_env(:plug_logger_json, :filtered_keys, ["password"])
+
+    user =
+      conn(:post, "/", %{user: %{password: "secret", username: "me"}})
+      |> call()
+      |> elem(1)
+      |> remove_colors()
+      |> Poison.decode!()
+      |> get_in(["params", "user"])
+
+    assert user["password"] == "[FILTERED]"
+    assert user["username"] == "me"
+  end
+
+  test "correct output - structs in params" do
+    params =
+      conn(:post, "/", %{photo: %Plug.Upload{}})
+      |> call()
+      |> elem(1)
+      |> remove_colors()
+      |> Poison.decode!()
+      |> get_in(["params"])
+
+    assert params["photo"] == "%Plug.Upload{content_type: nil, filename: nil, path: nil}"
+  end
+
   describe "500 error" do
     test "logs the error" do
       stacktrace = [
