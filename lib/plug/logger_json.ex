@@ -184,8 +184,10 @@ defmodule Plug.LoggerJSON do
   end
 
   @spec filter_values(struct(), [binary()]) :: binary()
-  defp filter_values(%{__struct__: mod} = struct, _) when is_atom(mod) do
-    inspect(struct)
+  defp filter_values(%{__struct__: mod} = struct, filters) when is_atom(mod) do
+    struct
+    |> Map.from_struct()
+    |> filter_values(filters)
   end
 
   @spec filter_values(map(), [binary()]) :: [{binary(), any()}]
