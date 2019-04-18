@@ -334,7 +334,7 @@ defmodule Plug.LoggerJSONTest do
       |> Poison.decode!()
       |> get_in(["params"])
 
-    assert params["photo"] == "%Plug.Upload{content_type: nil, filename: nil, path: nil}"
+    assert params["photo"] == %{"content_type" => nil, "filename" => nil, "path" => nil}
   end
 
   describe "500 error" do
