@@ -20,10 +20,10 @@ The support policy is to support the last 2 major versions of Erlang and the thr
 
    ```elixir
    def deps do
-     [{:plug_logger_json, "~> 0.6.0"}]
+     [{:plug_logger_json, "~> 0.7.0"}]
    end
    ```
-   
+
 2. ensure plug_logger_json is started before your application (Skip if using Elixir 1.4 or greater):
 
    ```elixir
@@ -31,7 +31,7 @@ The support policy is to support the last 2 major versions of Erlang and the thr
      [applications: [:plug_logger_json]]
    end
    ```
-  
+
 3. Replace `Plug.Logger` with either:
 
    * `Plug.LoggerJSON, log: Logger.level`,
@@ -40,7 +40,7 @@ The support policy is to support the last 2 major versions of Erlang and the thr
 ## Recommended Setup
 
 ### Configure `plug_logger_json`
-  
+
 Add to your `config/config.exs` or `config/env_name.exs` if you want to filter params or headers or suppress any logged keys:
 
 ```elixir
@@ -50,7 +50,7 @@ config :plug_logger_json,
 ```
 
 ### Configure the logger (console)
-  
+
 In your `config/config.exs` or `config/env_name.exs`:
 
 ```elixir
@@ -64,14 +64,14 @@ config :logger, :console,
 
 Do the following:
 
-* update deps in `mix.exs` with the following: 
+* update deps in `mix.exs` with the following:
 
     ```elixir
     def deps do
      [{:logger_file_backend, "~> 0.0.10"}]
     end
     ```
-   
+
 * add to your `config/config.exs` or `config/env_name.exs`:
 
     ```elixir
@@ -123,7 +123,7 @@ def extra_attributes(conn) do
     "other_id" => get_in(conn.private, [:private_resource, :id]),
     "should_not_appear" => conn.private[:does_not_exist]
   }
-  
+
   map
   |> Enum.filter(&(&1 !== nil))
   |> Enum.into(%{})
@@ -141,7 +141,7 @@ In this example, the `:user_id` is retrieved from `conn.assigns.user.user_id` an
 `LoggerJSON` plug supports two levels of logging:
 
   * `info` / `error` will log:
-  
+
     * api_version,
     * date_time,
     * duration,
@@ -150,9 +150,9 @@ In this example, the `:user_id` is retrieved from `conn.assigns.user.user_id` an
     * path,
     * request_id,
     * status
-    
+
   * `warn` / `debug` will log everything from info and:
-  
+
     * client_ip,
     * client_version,
     * params / request_body.
