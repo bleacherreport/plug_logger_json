@@ -7,6 +7,7 @@
 * Updated Dependencies 
 * Ran Formatter 
 * Fixed warnings up to 1.8
+* Support nested param filtering
 
 ## 0.6.0
 * Extra configration that allows control of logging debug fields.
