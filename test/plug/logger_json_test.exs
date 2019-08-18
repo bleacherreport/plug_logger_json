@@ -94,6 +94,10 @@ defmodule Plug.LoggerJSONTest do
     {Process.get(:get_log), data}
   end
 
+  setup do
+    Application.put_env(:plug_logger_json, :json_encoder, Jason)
+  end
+
   test "correct output - no params or headers" do
     {_conn, message} =
       conn(:get, "/")
