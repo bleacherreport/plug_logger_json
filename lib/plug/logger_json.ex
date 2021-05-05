@@ -1,6 +1,7 @@
 defmodule Plug.LoggerJSON do
   @moduledoc """
   A plug for logging basic request information in the format:
+
   ```json
   {
     "api_version":     "N/A"
@@ -22,33 +23,37 @@ defmodule Plug.LoggerJSON do
   ```
 
   To use it, just plug it into the desired module.
-  plug Plug.LoggerJSON, log: :debug
+
+      plug Plug.LoggerJSON, log: :debug
+
   ## Options
+
   * `:log` - The log level at which this plug should log its request info.
-  Default is `:info`.
+    Default is `:info`.
+
   * `:extra_attributes_fn` - Function to call with `conn` to add additional
-  fields to the requests. Default is `nil`. Please see "Extra Fields" section
-  for more information.
+    fields to the requests. Default is `nil`. Please see "Extra Fields" section
+    for more information.
 
   ## Extra Fields
 
   Additional data can be logged alongside the request by specifying a function
   to call which returns a map:
 
-        def extra_attributes(conn) do
-          map = %{
-            "user_id" => get_in(conn.assigns, [:user, :user_id]),
-            "other_id" => get_in(conn.private, [:private_resource, :id]),
-            "should_not_appear" => conn.private[:does_not_exist]
-          }
+      def extra_attributes(conn) do
+        map = %{
+          "user_id" => get_in(conn.assigns, [:user, :user_id]),
+          "other_id" => get_in(conn.private, [:private_resource, :id]),
+          "should_not_appear" => conn.private[:does_not_exist]
+        }
 
-          map
-          |> Enum.filter(&(&1 !== nil))
-          |> Enum.into(%{})
-        end
+        map
+        |> Enum.filter(&(&1 !== nil))
+        |> Enum.into(%{})
+      end
 
-        plug Plug.LoggerJSON, log: Logger.level,
-                              extra_attributes_fn: &MyPlug.extra_attributes/1
+      plug Plug.LoggerJSON, log: Logger.level,
+                            extra_attributes_fn: &MyPlug.extra_attributes/1
 
   In this example, the `:user_id` is retrieved from `conn.assigns.user.user_id`
   and added to the log if it exists. In the example, any values that are `nil`
@@ -237,7 +242,14 @@ defmodule Plug.LoggerJSON do
       "-" <>
       zero_pad(month, 2) <>
       "-" <>
-      zero_pad(day, 2) <> "T" <> zero_pad(hour, 2) <> ":" <> zero_pad(minute, 2) <> ":" <> zero_pad(second, 2) <> "Z"
+      zero_pad(day, 2) <>
+      "T" <>
+      zero_pad(hour, 2) <>
+      ":" <>
+      zero_pad(minute, 2) <>
+      ":" <>
+      zero_pad(second, 2) <>
+      "Z"
   end
 
   @spec phoenix_attributes(map()) :: map()
