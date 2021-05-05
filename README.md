@@ -1,14 +1,19 @@
-# PlugLoggerJson
-[![Hex pm](http://img.shields.io/hexpm/v/plug_logger_json.svg?style=flat)](https://hex.pm/packages/plug_logger_json)
+# Plug Logger JSON
+
 [![Build Status](https://travis-ci.org/bleacherreport/plug_logger_json.svg?branch=master)](https://travis-ci.org/bleacherreport/plug_logger_json)
-[![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://github.com/bleacherreport/plug_logger_json/blob/master/LICENSE)
+[![Module Version](https://img.shields.io/hexpm/v/plug_logger_json.svg)](https://hex.pm/packages/plug_logger_json)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/plug_logger_json/)
+[![Total Download](https://img.shields.io/hexpm/dt/plug_logger_json.svg)](https://hex.pm/packages/plug_logger_json)
+[![License](https://img.shields.io/hexpm/l/plug_logger_json.svg)](https://github.com/bleacherreport/plug_logger_json/blob/master/LICENSE)
+[![Last Updated](https://img.shields.io/github/last-commit/bleacherreport/plug_logger_json.svg)](https://github.com/bleacherreport/plug_logger_json/commits/master)
+
 
 A comprehensive JSON logger Plug.
 
 ## Dependencies
 
-* Plug
-* Poison
+* `Plug`
+* `Poison`
 
 ## Elixir & Erlang Support
 
@@ -16,15 +21,17 @@ The support policy is to support the last 2 major versions of Erlang and the thr
 
 ## Installation
 
-1. add plug_logger_json to your list of dependencies in `mix.exs`:
+1. Add `:plug_logger_json` to your list of dependencies in `mix.exs`:
 
    ```elixir
    def deps do
-     [{:plug_logger_json, "~> 0.7.0"}]
+    [
+      {:plug_logger_json, "~> 0.7.0"}
+    ]
    end
    ```
 
-2. ensure plug_logger_json is started before your application (Skip if using Elixir 1.4 or greater):
+2. Ensure `:plug_logger_json` is started before your application (Skip if using Elixir 1.4 or greater):
 
    ```elixir
    def application do
@@ -64,53 +71,55 @@ config :logger, :console,
 
 Do the following:
 
-* update deps in `mix.exs` with the following:
+* Update deps in `mix.exs` with the following:
 
-    ```elixir
-    def deps do
-     [{:logger_file_backend, "~> 0.0.10"}]
-    end
-    ```
+  ```elixir
+  def deps do
+  [
+    {:logger_file_backend, "~> 0.0.10"}
+  ]
+  end
+  ```
 
-* add to your `config/config.exs` or `config/env_name.exs`:
+* Add to your `config/config.exs` or `config/env_name.exs`:
 
-    ```elixir
-    config :logger,
-      format: "$message\n",
-      backends: [{LoggerFileBackend, :log_file}, :console]
+  ```elixir
+  config :logger,
+    format: "$message\n",
+    backends: [{LoggerFileBackend, :log_file}, :console]
 
-    config :logger, :log_file,
-      format: "$message\n",
-      level: :info,
-      metadata: [:request_id],
-      path: "log/my_pipeline.log"
-    ```
+  config :logger, :log_file,
+    format: "$message\n",
+    level: :info,
+    metadata: [:request_id],
+    path: "log/my_pipeline.log"
+  ```
 
-* ensure you are using `Plug.Parsers` (Phoenix adds this to `endpoint.ex` by default) to parse params as well as request body:
+* Ensure you are using `Plug.Parsers` (Phoenix adds this to `endpoint.ex` by default) to parse params as well as request body:
 
-    ```elixir
-    plug Plug.Parsers,
-      parsers: [:urlencoded, :multipart, :json],
-      pass: ["*/*"],
-      json_decoder: Poison
-    ```
+  ```elixir
+  plug Plug.Parsers,
+    parsers: [:urlencoded, :multipart, :json],
+    pass: ["*/*"],
+    json_decoder: Poison
+  ```
 
 ## Error Logging
 
 In `router.ex` of your Phoenix project or in your plug pipeline:
 
-* add `require Logger`,
-* add `use Plug.ErrorHandler`,
-* add the following two private functions:
+* Add `require Logger`,
+* Add `use Plug.ErrorHandler`,
+* Add the following two private functions:
 
-    ```elixir
-    defp handle_errors(%Plug.Conn{status: 500} = conn, %{kind: kind, reason: reason, stack: stacktrace}) do
-      Plug.LoggerJSON.log_error(kind, reason, stacktrace)
-      send_resp(conn, 500, Poison.encode!(%{errors: %{detail: "Internal server error"}}))
-    end
+  ```elixir
+  defp handle_errors(%Plug.Conn{status: 500} = conn, %{kind: kind, reason: reason, stack: stacktrace}) do
+    Plug.LoggerJSON.log_error(kind, reason, stacktrace)
+    send_resp(conn, 500, Poison.encode!(%{errors: %{detail: "Internal server error"}}))
+  end
 
-    defp handle_errors(_, _), do: nil
-    ```
+  defp handle_errors(_, _), do: nil
+  ```
 
 ## Extra Attributes
 
@@ -178,6 +187,20 @@ Before submitting your pull request, please run:
   * `mix credo --strict`,
   * `mix coveralls`,
   * `mix dialyzer`,
-  *  update changelog.
+  *  Update changelog.
 
 Please squash your pull request's commits into a single commit with a message and detailed description explaining the commit.
+
+## Copyright and License
+
+Copyright (c) 2016 Bleacher Report
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
